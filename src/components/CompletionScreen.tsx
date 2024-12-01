@@ -1,5 +1,4 @@
 'use client';
-import { motion } from 'framer-motion';
 
 interface CompletionStats {
   totalQuestions: number;
@@ -41,7 +40,7 @@ export default function CompletionScreen({
             {performance.message}
           </h2>
           <p className="text-gray-600">
-            You've completed the quiz! Here's how you did:
+            You&apos;ve completed the quiz! Here&apos;s how you did:
           </p>
         </div>
 

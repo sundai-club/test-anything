@@ -230,7 +230,7 @@ export default function TextInput({ onSubmit, suggestedTopics }: TextInputProps)
                              transition-colors duration-200
                              hover:bg-blue-50"
                   >
-                    Try "{topic}" 📖
+                    Try &ldquo;{topic}&rdquo; 📖
                   </button>
                 ))
               ) : inputMode === 'url' ? (
