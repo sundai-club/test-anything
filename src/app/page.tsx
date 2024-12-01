@@ -1,8 +1,9 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import QuestionCard from '@/components/QuestionCard';
 import TextInput from '@/components/TextInput';
 import ProgressBar from '@/components/ProgressBar';
+import CompletionScreen from '@/components/CompletionScreen';
 
 interface Question {
   id: number;
@@ -12,21 +13,83 @@ interface Question {
   hint: string;
 }
 
+type AppState = 'input' | 'questions' | 'completion';
+
 export default function Home() {
-  const [currentStep, setCurrentStep] = useState<'input' | 'questions'>('input');
+  const [currentStep, setCurrentStep] = useState<AppState>('input');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [stats, setStats] = useState({
+    totalQuestions: 0,
+    correctAnswers: 0,
+    skippedQuestions: 0,
+    timeSpent: 0,
+  });
+  const [startTime, setStartTime] = useState<number | null>(null);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (startTime && currentStep === 'questions') {
+      interval = setInterval(() => {
+        setStats(prev => ({
+          ...prev,
+          timeSpent: Math.floor((Date.now() - startTime) / 1000)
+        }));
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [startTime, currentStep]);
 
   const handleQuestionsGenerated = (newQuestions: Question[]) => {
     setQuestions(newQuestions);
     setCurrentQuestionIndex(0);
     setCurrentStep('questions');
+    setStartTime(Date.now());
+    setStats({
+      totalQuestions: newQuestions.length,
+      correctAnswers: 0,
+      skippedQuestions: 0,
+      timeSpent: 0,
+    });
+  };
+
+  const handleAnswerSubmit = (isCorrect: boolean) => {
+    if (isCorrect) {
+      setStats(prev => ({
+        ...prev,
+        correctAnswers: prev.correctAnswers + 1
+      }));
+    }
+    handleNext();
+  };
+
+  const handleSkip = () => {
+    setStats(prev => ({
+      ...prev,
+      skippedQuestions: prev.skippedQuestions + 1
+    }));
+    handleNext();
+  };
+
+  const handleNext = () => {
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(prev => prev + 1);
+    } else {
+      setCurrentStep('completion');
+    }
   };
 
   const handleReset = () => {
     setCurrentStep('input');
     setCurrentQuestionIndex(0);
     setQuestions([]);
+    setStats({
+      totalQuestions: 0,
+      correctAnswers: 0,
+      skippedQuestions: 0,
+      timeSpent: 0,
+    });
+    setStartTime(null);
   };
 
   return (
@@ -43,7 +106,7 @@ export default function Home() {
 
         {currentStep === 'input' ? (
           <TextInput onSubmit={handleQuestionsGenerated} />
-        ) : questions.length > 0 ? (
+        ) : currentStep === 'questions' ? (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
               <ProgressBar 
@@ -60,19 +123,9 @@ export default function Home() {
             
             <QuestionCard
               question={questions[currentQuestionIndex]}
-              onNext={() => {
-                if (currentQuestionIndex < questions.length - 1) {
-                  setCurrentQuestionIndex(prev => prev + 1);
-                } else {
-                  // Show completion message or reset
-                  handleReset();
-                }
-              }}
-              onSkip={() => {
-                if (currentQuestionIndex < questions.length - 1) {
-                  setCurrentQuestionIndex(prev => prev + 1);
-                }
-              }}
+              onNext={handleNext}
+              onSkip={handleSkip}
+              onAnswerSubmit={handleAnswerSubmit}
             />
 
             <div className="text-center text-gray-600">
@@ -80,9 +133,10 @@ export default function Home() {
             </div>
           </div>
         ) : (
-          <div className="text-center text-gray-700">
-            No questions available. Please try generating some! 🎯
-          </div>
+          <CompletionScreen
+            stats={stats}
+            onRestart={handleReset}
+          />
         )}
       </main>
     </div>
