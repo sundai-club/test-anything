@@ -106,13 +106,18 @@ export default function TextInput({ onSubmit, suggestedTopics }: TextInputProps)
       let textToProcess = input;
 
       if (inputMode === 'url') {
+        // Prepend https:// if no protocol is specified
+        const urlToFetch = input.startsWith('http://') || input.startsWith('https://')
+          ? input
+          : `https://${input}`;
+
         // Fetch content from URL
         const response = await fetch('/api/fetch-url', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ url: input }),
+          body: JSON.stringify({ url: urlToFetch }),
         });
 
         if (!response.ok) {
