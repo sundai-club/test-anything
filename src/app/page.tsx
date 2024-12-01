@@ -4,6 +4,7 @@ import QuestionCard from '@/components/QuestionCard';
 import TextInput from '@/components/TextInput';
 import ProgressBar from '@/components/ProgressBar';
 import CompletionScreen from '@/components/CompletionScreen';
+import type { Question } from '@/types';
 
 // Sample texts for suggested topics
 const SUGGESTED_TOPICS = {
@@ -13,14 +14,6 @@ const SUGGESTED_TOPICS = {
   
   'Climate Change': `Climate change refers to long-term shifts in global or regional weather patterns. Since the 1800s, human activities have been the main driver of climate change, primarily due to burning fossil fuels like coal, oil and gas. Burning fossil fuels generates greenhouse gas emissions that act like a blanket wrapped around the Earth, trapping the sun's heat and raising temperatures. Examples of greenhouse gas emissions that are causing climate change include carbon dioxide and methane.`,
 } as const;
-
-interface Question {
-  id: number;
-  question: string;
-  options: string[];
-  correctAnswer: string;
-  hint: string;
-}
 
 type AppState = 'input' | 'questions' | 'completion';
 

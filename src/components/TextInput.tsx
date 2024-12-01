@@ -3,8 +3,10 @@ import { useState, useCallback } from 'react';
 import LoadingAnimation from './LoadingAnimation';
 import { useDropzone } from 'react-dropzone';
 
+import { Question } from '@/types';
+
 interface TextInputProps {
-  onSubmit: (questions: any[]) => void;
+  onSubmit: (questions: Question[]) => void;
   suggestedTopics: Record<string, string>;
 }
 
