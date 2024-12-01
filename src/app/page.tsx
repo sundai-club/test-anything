@@ -1,101 +1,146 @@
-import Image from "next/image";
+'use client';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import QuestionCard from '@/components/QuestionCard';
+import TextInput from '@/components/TextInput';
+import ProgressBar from '@/components/ProgressBar';
+
+// Dummy questions for now
+const dummyQuestions = [
+  {
+    id: 1,
+    question: "What is the capital of France?",
+    options: ["London", "Berlin", "Paris", "Madrid"],
+    correctAnswer: "Paris",
+    hint: "This city is known as the City of Light 💡"
+  },
+  {
+    id: 2,
+    question: "Which planet is known as the Red Planet?",
+    options: ["Venus", "Mars", "Jupiter", "Saturn"],
+    correctAnswer: "Mars",
+    hint: "Its color comes from iron oxide (rust) on its surface 🔴"
+  },
+  {
+    id: 3,
+    question: "Which element has the chemical symbol 'Au'?",
+    options: ["Silver", "Copper", "Gold", "Aluminum"],
+    correctAnswer: "Gold",
+    hint: "This precious metal has been valued since ancient times ✨"
+  },
+  {
+    id: 4,
+    question: "What is the largest organ in the human body?",
+    options: ["Heart", "Brain", "Liver", "Skin"],
+    correctAnswer: "Skin",
+    hint: "It covers your entire body and protects you from the environment 🧴"
+  },
+  {
+    id: 5,
+    question: "Which country is home to the Great Barrier Reef?",
+    options: ["Brazil", "Australia", "Indonesia", "Thailand"],
+    correctAnswer: "Australia",
+    hint: "This country is also known as the Land Down Under 🐨"
+  },
+  {
+    id: 6,
+    question: "Who painted the Mona Lisa?",
+    options: ["Vincent van Gogh", "Pablo Picasso", "Leonardo da Vinci", "Michelangelo"],
+    correctAnswer: "Leonardo da Vinci",
+    hint: "This Italian Renaissance polymath also designed flying machines ✏️"
+  },
+  {
+    id: 7,
+    question: "What is the hardest natural substance on Earth?",
+    options: ["Gold", "Iron", "Diamond", "Platinum"],
+    correctAnswer: "Diamond",
+    hint: "This gem is made of pure carbon under extreme pressure 💎"
+  },
+  {
+    id: 8,
+    question: "Which planet is known as the Morning Star?",
+    options: ["Mercury", "Venus", "Mars", "Jupiter"],
+    correctAnswer: "Venus",
+    hint: "It's often visible in the early morning sky ⭐"
+  },
+  {
+    id: 9,
+    question: "What is the capital of Japan?",
+    options: ["Seoul", "Beijing", "Tokyo", "Bangkok"],
+    correctAnswer: "Tokyo",
+    hint: "This city hosted the most recent Summer Olympics 🗼"
+  },
+  {
+    id: 10,
+    question: "Which gas do plants absorb from the atmosphere?",
+    options: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"],
+    correctAnswer: "Carbon Dioxide",
+    hint: "Plants use this gas for photosynthesis 🌱"
+  },
+  {
+    id: 11,
+    question: "What is the fastest land animal?",
+    options: ["Lion", "Cheetah", "Gazelle", "Leopard"],
+    correctAnswer: "Cheetah",
+    hint: "This big cat can reach speeds of up to 70 mph 🐆"
+  },
+  {
+    id: 12,
+    question: "Which is the smallest prime number?",
+    options: ["0", "1", "2", "3"],
+    correctAnswer: "2",
+    hint: "It's also the only even prime number 🔢"
+  }
+];
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [currentStep, setCurrentStep] = useState<'input' | 'questions'>('input');
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-pink-100 to-blue-100 p-4 sm:p-8">
+      <motion.main 
+        className="max-w-3xl mx-auto space-y-8 animate-fadeIn"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <header className="text-center space-y-4">
+          <h1 className="text-4xl font-bold text-gray-900">
+            Learn Anything! 🚀
+          </h1>
+          <p className="text-gray-700">
+            Paste your study material and get instant questions! ✨
+          </p>
+        </header>
+
+        {currentStep === 'input' ? (
+          <TextInput onSubmit={() => setCurrentStep('questions')} />
+        ) : (
+          <div className="space-y-6">
+            <ProgressBar 
+              current={currentQuestionIndex + 1} 
+              total={dummyQuestions.length} 
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+            <QuestionCard
+              question={dummyQuestions[currentQuestionIndex]}
+              onNext={() => {
+                if (currentQuestionIndex < dummyQuestions.length - 1) {
+                  setCurrentQuestionIndex(prev => prev + 1);
+                } else {
+                  setCurrentStep('input');
+                  setCurrentQuestionIndex(0);
+                }
+              }}
+              onSkip={() => {
+                if (currentQuestionIndex < dummyQuestions.length - 1) {
+                  setCurrentQuestionIndex(prev => prev + 1);
+                }
+              }}
+            />
+          </div>
+        )}
+      </motion.main>
     </div>
   );
 }
