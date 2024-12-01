@@ -1,5 +1,5 @@
 'use client';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import LoadingAnimation from './LoadingAnimation';
 import { useDropzone } from 'react-dropzone';
 
@@ -63,8 +63,8 @@ function ToggleSwitch({ mode, onToggle }: {
 
 const SUGGESTED_LINKS = {
   'AI Wiki': 'https://en.wikipedia.org/wiki/Artificial_intelligence',
-  'MIT Wiki': 'https://en.wikipedia.org/wiki/Massachusetts_Institute_of_Technology',
-  'Climate Wiki': 'https://en.wikipedia.org/wiki/Climate_change'
+  'Climate Wiki': 'https://en.wikipedia.org/wiki/Climate_change',
+  'Modern Dating': 'https://markmanson.net/guide-to-modern-dating'
 } as const;
 
 export default function TextInput({ onSubmit, suggestedTopics }: TextInputProps) {
@@ -73,6 +73,12 @@ export default function TextInput({ onSubmit, suggestedTopics }: TextInputProps)
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setInput('');
+    setPdfFile(null);
+    setError(null);
+  }, [inputMode]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
