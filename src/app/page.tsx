@@ -1,110 +1,37 @@
 'use client';
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import QuestionCard from '@/components/QuestionCard';
 import TextInput from '@/components/TextInput';
 import ProgressBar from '@/components/ProgressBar';
 
-// Dummy questions for now
-const dummyQuestions = [
-  {
-    id: 1,
-    question: "What is the capital of France?",
-    options: ["London", "Berlin", "Paris", "Madrid"],
-    correctAnswer: "Paris",
-    hint: "This city is known as the City of Light 💡"
-  },
-  {
-    id: 2,
-    question: "Which planet is known as the Red Planet?",
-    options: ["Venus", "Mars", "Jupiter", "Saturn"],
-    correctAnswer: "Mars",
-    hint: "Its color comes from iron oxide (rust) on its surface 🔴"
-  },
-  {
-    id: 3,
-    question: "Which element has the chemical symbol 'Au'?",
-    options: ["Silver", "Copper", "Gold", "Aluminum"],
-    correctAnswer: "Gold",
-    hint: "This precious metal has been valued since ancient times ✨"
-  },
-  {
-    id: 4,
-    question: "What is the largest organ in the human body?",
-    options: ["Heart", "Brain", "Liver", "Skin"],
-    correctAnswer: "Skin",
-    hint: "It covers your entire body and protects you from the environment 🧴"
-  },
-  {
-    id: 5,
-    question: "Which country is home to the Great Barrier Reef?",
-    options: ["Brazil", "Australia", "Indonesia", "Thailand"],
-    correctAnswer: "Australia",
-    hint: "This country is also known as the Land Down Under 🐨"
-  },
-  {
-    id: 6,
-    question: "Who painted the Mona Lisa?",
-    options: ["Vincent van Gogh", "Pablo Picasso", "Leonardo da Vinci", "Michelangelo"],
-    correctAnswer: "Leonardo da Vinci",
-    hint: "This Italian Renaissance polymath also designed flying machines ✏️"
-  },
-  {
-    id: 7,
-    question: "What is the hardest natural substance on Earth?",
-    options: ["Gold", "Iron", "Diamond", "Platinum"],
-    correctAnswer: "Diamond",
-    hint: "This gem is made of pure carbon under extreme pressure 💎"
-  },
-  {
-    id: 8,
-    question: "Which planet is known as the Morning Star?",
-    options: ["Mercury", "Venus", "Mars", "Jupiter"],
-    correctAnswer: "Venus",
-    hint: "It's often visible in the early morning sky ⭐"
-  },
-  {
-    id: 9,
-    question: "What is the capital of Japan?",
-    options: ["Seoul", "Beijing", "Tokyo", "Bangkok"],
-    correctAnswer: "Tokyo",
-    hint: "This city hosted the most recent Summer Olympics 🗼"
-  },
-  {
-    id: 10,
-    question: "Which gas do plants absorb from the atmosphere?",
-    options: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"],
-    correctAnswer: "Carbon Dioxide",
-    hint: "Plants use this gas for photosynthesis 🌱"
-  },
-  {
-    id: 11,
-    question: "What is the fastest land animal?",
-    options: ["Lion", "Cheetah", "Gazelle", "Leopard"],
-    correctAnswer: "Cheetah",
-    hint: "This big cat can reach speeds of up to 70 mph 🐆"
-  },
-  {
-    id: 12,
-    question: "Which is the smallest prime number?",
-    options: ["0", "1", "2", "3"],
-    correctAnswer: "2",
-    hint: "It's also the only even prime number 🔢"
-  }
-];
+interface Question {
+  id: number;
+  question: string;
+  options: string[];
+  correctAnswer: string;
+  hint: string;
+}
 
 export default function Home() {
   const [currentStep, setCurrentStep] = useState<'input' | 'questions'>('input');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [questions, setQuestions] = useState<Question[]>([]);
+
+  const handleQuestionsGenerated = (newQuestions: Question[]) => {
+    setQuestions(newQuestions);
+    setCurrentQuestionIndex(0);
+    setCurrentStep('questions');
+  };
+
+  const handleReset = () => {
+    setCurrentStep('input');
+    setCurrentQuestionIndex(0);
+    setQuestions([]);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-100 to-blue-100 p-4 sm:p-8">
-      <motion.main 
-        className="max-w-3xl mx-auto space-y-8 animate-fadeIn"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
+      <main className="max-w-3xl mx-auto space-y-8 animate-fadeIn">
         <header className="text-center space-y-4">
           <h1 className="text-4xl font-bold text-gray-900">
             Learn Anything! 🚀
@@ -115,32 +42,49 @@ export default function Home() {
         </header>
 
         {currentStep === 'input' ? (
-          <TextInput onSubmit={() => setCurrentStep('questions')} />
-        ) : (
+          <TextInput onSubmit={handleQuestionsGenerated} />
+        ) : questions.length > 0 ? (
           <div className="space-y-6">
-            <ProgressBar 
-              current={currentQuestionIndex + 1} 
-              total={dummyQuestions.length} 
-            />
+            <div className="flex justify-between items-center">
+              <ProgressBar 
+                current={currentQuestionIndex + 1} 
+                total={questions.length} 
+              />
+              <button
+                onClick={handleReset}
+                className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                Start Over 🔄
+              </button>
+            </div>
+            
             <QuestionCard
-              question={dummyQuestions[currentQuestionIndex]}
+              question={questions[currentQuestionIndex]}
               onNext={() => {
-                if (currentQuestionIndex < dummyQuestions.length - 1) {
+                if (currentQuestionIndex < questions.length - 1) {
                   setCurrentQuestionIndex(prev => prev + 1);
                 } else {
-                  setCurrentStep('input');
-                  setCurrentQuestionIndex(0);
+                  // Show completion message or reset
+                  handleReset();
                 }
               }}
               onSkip={() => {
-                if (currentQuestionIndex < dummyQuestions.length - 1) {
+                if (currentQuestionIndex < questions.length - 1) {
                   setCurrentQuestionIndex(prev => prev + 1);
                 }
               }}
             />
+
+            <div className="text-center text-gray-600">
+              Question {currentQuestionIndex + 1} of {questions.length}
+            </div>
+          </div>
+        ) : (
+          <div className="text-center text-gray-700">
+            No questions available. Please try generating some! 🎯
           </div>
         )}
-      </motion.main>
+      </main>
     </div>
   );
 }
