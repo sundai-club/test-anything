@@ -1,8 +1,10 @@
+'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 type Quiz = {
   id: string;
+  name: string;
   text: string;
   totalQuestions: number;
   correctAnswers: number;
@@ -56,7 +58,10 @@ export default function CommunityQuizzes() {
             <div className="space-y-3">
               <div className="flex items-start justify-between">
                 <div className="space-y-1 flex-1">
-                  <p className="text-gray-900 font-medium line-clamp-2 group-hover:text-blue-600 transition-colors">
+                  <h3 className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
+                    {quiz.name}
+                  </h3>
+                  <p className="text-sm text-gray-600 line-clamp-2">
                     {quiz.text.substring(0, 100)}...
                   </p>
                   <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -71,8 +76,13 @@ export default function CommunityQuizzes() {
                 </div>
               </div>
               
-              <div className="flex justify-between items-center text-xs text-gray-500">
-                Created at: {new Date(quiz.createdAt).toLocaleString()}
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-400">
+                  {new Date(quiz.createdAt).toLocaleDateString()}
+                </span>
+                <span className="text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                  Take Quiz →
+                </span>
               </div>
             </div>
           </div>

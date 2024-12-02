@@ -7,9 +7,9 @@ export async function GET() {
       orderBy: {
         createdAt: 'desc'
       },
-      take: 10, // Limit to 10 most recent quizzes
       select: {
         id: true,
+        name: true,
         text: true,
         totalQuestions: true,
         correctAnswers: true,

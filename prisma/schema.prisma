@@ -11,12 +11,13 @@ datasource db {
 }
 
 model Quiz {
-  id            String   @id @default(uuid())
-  text          String
-  questions     String   // Stored as JSON
-  totalQuestions Int
-  correctAnswers Int
+  id              String   @id @default(uuid())
+  name            String   // Now required
+  text            String
+  questions       String
+  totalQuestions  Int
+  correctAnswers  Int
   skippedQuestions Int
-  timeSpent     Int
-  createdAt     DateTime @default(now())
+  timeSpent       Int
+  createdAt       DateTime @default(now())
 }
