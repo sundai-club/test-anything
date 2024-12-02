@@ -10,7 +10,7 @@ interface TextInputProps {
   suggestedTopics: Record<string, string>;
 }
 
-type InputMode = 'text' | 'url';
+type InputMode = 'text' | 'url' | 'pdf';
 
 function ToggleSwitch({ mode, onToggle }: { 
   mode: InputMode;

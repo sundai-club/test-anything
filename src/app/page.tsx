@@ -157,7 +157,6 @@ export default function Home() {
             
             <QuestionCard
               question={questions[currentQuestionIndex]}
-              onNext={handleNext}
               onSkip={handleSkip}
               onAnswerSubmit={handleAnswerSubmit}
             />
