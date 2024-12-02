@@ -17,7 +17,7 @@ export default function Home() {
       <main className="max-w-3xl mx-auto space-y-8 animate-fadeIn">
         <header className="text-center space-y-6">
           <h1 className="text-5xl font-bold text-gray-900">
-            TestMe App 🧠
+            QuizMe App 🧠
           </h1>
           <p className="text-xl text-gray-700 max-w-2xl mx-auto">
             Transform any text into an interactive quiz using AI. Perfect for studying, 
