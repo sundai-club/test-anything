@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     }
 
     const prompt = `You are a helpful AI that generates multiple choice questions. 
-Please generate 10 unique multiple-choice questions based on the following text.
+Please generate 5 unique multiple-choice questions based on the following text.
 Return the response in JSON format with an array of questions.
 
 Text to analyze:
