@@ -4,8 +4,6 @@ import LoadingAnimation from './LoadingAnimation';
 import { useDropzone } from 'react-dropzone';
 import { useRouter } from 'next/navigation';
 
-import { Question } from '@/types';
-
 interface TextInputProps {
   suggestedTopics: Record<string, string>;
 }
@@ -146,8 +144,9 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
 
       const data = await response.json();
       router.push(`/quiz/${data.quizId}`);
-    } catch (e) {
-      setError('Failed to generate questions. Please try again.');
+    } catch (e: Error | unknown) {
+      const errorMessage = e instanceof Error ? e.message : 'Unknown error occurred';
+      setError(`Failed to generate questions: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }

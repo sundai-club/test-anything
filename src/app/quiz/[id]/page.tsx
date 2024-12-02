@@ -20,7 +20,7 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
     skippedQuestions: 0,
     timeSpent: 0,
   });
-  const [startTime, setStartTime] = useState<number>(Date.now());
+  const [startTime] = useState<number>(Date.now());
   const [isComplete, setIsComplete] = useState(false);
 
   useEffect(() => {
@@ -33,7 +33,8 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
         setStats(prev => ({ ...prev, totalQuestions: JSON.parse(data.questions).length }));
         setLoading(false);
       } catch (e) {
-        setError('Failed to load quiz');
+        const errorMessage = e instanceof Error ? e.message : 'Unknown error occurred';
+        setError(`Failed to load quiz: ${errorMessage}`);
         setLoading(false);
       }
     };
