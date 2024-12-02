@@ -9,14 +9,41 @@ interface CompletionStats {
 
 export default function CompletionScreen({ 
   stats, 
-  onRestart 
+  onRestart,
+  quizId
 }: { 
   stats: CompletionStats;
   onRestart: () => void;
+  quizId?: string;
 }) {
   const percentageCorrect = Math.round((stats.correctAnswers / stats.totalQuestions) * 100);
   const minutes = Math.floor(stats.timeSpent / 60);
   const seconds = stats.timeSpent % 60;
+
+  const handleShare = async () => {
+    if (quizId) {
+      const shareUrl = `${window.location.origin}/quiz/${quizId}`;
+      
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: 'Try this quiz!',
+            text: `I just scored ${percentageCorrect}% on this quiz. Can you beat my score?`,
+            url: shareUrl
+          });
+        } catch (error) {
+          console.log('Error sharing:', error);
+          // Fallback to copying to clipboard
+          await navigator.clipboard.writeText(shareUrl);
+          alert('Quiz link copied to clipboard!');
+        }
+      } else {
+        // Fallback for browsers that don't support Web Share API
+        await navigator.clipboard.writeText(shareUrl);
+        alert('Quiz link copied to clipboard!');
+      }
+    }
+  };
 
   // Determine the emoji and message based on performance
   const getPerformanceDetails = () => {
@@ -117,6 +144,16 @@ export default function CompletionScreen({
 
         {/* Action Buttons */}
         <div className="space-y-4 pt-4">
+          {quizId && (
+            <button
+              onClick={handleShare}
+              className="w-full py-3 px-6 bg-green-500 text-white rounded-lg font-semibold
+                       transition-all duration-200 hover:bg-green-600 hover:scale-102 active:scale-98
+                       mb-3"
+            >
+              Share Quiz 🔗
+            </button>
+          )}
           <button
             onClick={onRestart}
             className="w-full py-3 px-6 bg-blue-500 text-white rounded-lg font-semibold

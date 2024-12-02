@@ -2,11 +2,11 @@
 import { useState, useCallback, useEffect } from 'react';
 import LoadingAnimation from './LoadingAnimation';
 import { useDropzone } from 'react-dropzone';
+import { useRouter } from 'next/navigation';
 
 import { Question } from '@/types';
 
 interface TextInputProps {
-  onSubmit: (questions: Question[]) => void;
   suggestedTopics: Record<string, string>;
 }
 
@@ -56,12 +56,13 @@ const SUGGESTED_LINKS = {
   'Modern Dating': 'https://markmanson.net/guide-to-modern-dating'
 } as const;
 
-export default function TextInput({ onSubmit, suggestedTopics }: TextInputProps) {
+export default function TextInput({ suggestedTopics }: TextInputProps) {
   const [inputMode, setInputMode] = useState<InputMode>('text');
   const [input, setInput] = useState('');
   const [pdfFile, setPdfFile] = useState<File | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     setInput('');
@@ -88,49 +89,49 @@ export default function TextInput({ onSubmit, suggestedTopics }: TextInputProps)
   });
 
   const handleSubmit = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+    setIsLoading(true);
+    setError(null);
 
-      let textToProcess = input;
+    let textToProcess = input;
 
-      if (inputMode === 'url') {
-        // Prepend https:// if no protocol is specified
-        const urlToFetch = input.startsWith('http://') || input.startsWith('https://')
-          ? input
-          : `https://${input}`;
+    if (inputMode === 'url') {
+      // Prepend https:// if no protocol is specified
+      const urlToFetch = input.startsWith('http://') || input.startsWith('https://')
+        ? input
+        : `https://${input}`;
 
-        // Fetch content from URL
-        const response = await fetch('/api/fetch-url', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ url: urlToFetch }),
-        });
+      // Fetch content from URL
+      const response = await fetch('/api/fetch-url', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url: urlToFetch }),
+      });
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch URL content');
-        }
-
-        const data = await response.json();
-        textToProcess = data.content;
-      } else if (inputMode === 'pdf') {
-        if (!pdfFile) throw new Error('No PDF file selected');
-        
-        const formData = new FormData();
-        formData.append('pdf', pdfFile);
-
-        const response = await fetch('/api/parse-pdf', {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (!response.ok) throw new Error('Failed to parse PDF');
-        const data = await response.json();
-        textToProcess = data.content;
+      if (!response.ok) {
+        throw new Error('Failed to fetch URL content');
       }
 
+      const data = await response.json();
+      textToProcess = data.content;
+    } else if (inputMode === 'pdf') {
+      if (!pdfFile) throw new Error('No PDF file selected');
+      
+      const formData = new FormData();
+      formData.append('pdf', pdfFile);
+
+      const response = await fetch('/api/parse-pdf', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error('Failed to parse PDF');
+      const data = await response.json();
+      textToProcess = data.content;
+    }
+
+    try {
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: {
@@ -144,17 +145,17 @@ export default function TextInput({ onSubmit, suggestedTopics }: TextInputProps)
       }
 
       const data = await response.json();
-      onSubmit(data.questions);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong');
+      router.push(`/quiz/${data.quizId}`);
+    } catch (e) {
+      setError('Failed to generate questions. Please try again.');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="space-y-4 animate-fadeIn">
-      {loading ? (
+      {isLoading ? (
         <LoadingAnimation />
       ) : (
         <>
