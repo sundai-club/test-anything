@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { prisma } from '@/lib/prisma';
 
-export const runtime = 'edge';
 export const maxDuration = 30;
 
 const openai = new OpenAI({
@@ -36,7 +35,7 @@ export async function POST(request: Request) {
 
     // Then generate questions as before
     const questionsPrompt = `You are a helpful AI that generates multiple choice questions. 
-    Please generate 5 unique multiple-choice questions based on the following text.
+    Please generate 10 unique multiple-choice questions based on the following text.
     Return the response in JSON format with an array of questions.
     
     Text to analyze:
