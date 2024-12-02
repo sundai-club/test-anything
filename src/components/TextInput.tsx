@@ -10,7 +10,7 @@ interface TextInputProps {
   suggestedTopics: Record<string, string>;
 }
 
-type InputMode = 'text' | 'url' | 'pdf';
+type InputMode = 'text' | 'url';
 
 function ToggleSwitch({ mode, onToggle }: { 
   mode: InputMode;
@@ -21,10 +21,8 @@ function ToggleSwitch({ mode, onToggle }: {
       <div className="relative flex w-[300px]">
         {/* Background Slider */}
         <div
-          className={`absolute h-full w-1/3 bg-white rounded-full shadow-md transform transition-transform duration-200 ease-in-out ${
-            mode === 'url' ? 'translate-x-full' : 
-            mode === 'pdf' ? 'translate-x-[200%]' : 
-            'translate-x-0'
+          className={`absolute h-full w-1/2 bg-white rounded-full shadow-md transform transition-transform duration-200 ease-in-out ${
+            mode === 'url' ? 'translate-x-full' : 'translate-x-0'
           }`}
         />
         
@@ -46,15 +44,6 @@ function ToggleSwitch({ mode, onToggle }: {
         >
           <span className="text-lg">🔗</span>
           <span className="font-medium">URL</span>
-        </button>
-        <button
-          onClick={() => onToggle('pdf')}
-          className={`flex-1 px-4 py-2 rounded-full z-10 transition-colors duration-200 flex items-center justify-center gap-2 ${
-            mode === 'pdf' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          <span className="text-lg">📄</span>
-          <span className="font-medium">PDF</span>
         </button>
       </div>
     </div>
