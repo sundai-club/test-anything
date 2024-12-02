@@ -10,14 +10,16 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@prisma/client": "^5.7.0",
+    "@prisma/client": "^6.0.0",
     "cheerio": "^1.0.0",
     "framer-motion": "^11.12.0",
-    "next": "14.0.3",
-    "openai": "^4.0.0",
+    "next": "15.0.3",
+    "openai": "^4.73.1",
+    "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^4.9.124",
-    "react": "^18",
-    "react-dom": "^18",
+    "prisma": "^6.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "react-dropzone": "^14.3.5"
   },
   "devDependencies": {
