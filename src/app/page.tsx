@@ -4,6 +4,7 @@ import QuestionCard from '@/components/QuestionCard';
 import TextInput from '@/components/TextInput';
 import ProgressBar from '@/components/ProgressBar';
 import CompletionScreen from '@/components/CompletionScreen';
+import CommunityQuizzes from '@/components/CommunityQuizzes';
 import type { Question } from '@/types';
 
 // Sample texts for suggested topics
@@ -28,6 +29,7 @@ export default function Home() {
     timeSpent: 0,
   });
   const [startTime, setStartTime] = useState<number | null>(null);
+  const [quizId, setQuizId] = useState<string | null>(null);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -42,8 +44,9 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [startTime, currentStep]);
 
-  const handleQuestionsGenerated = (newQuestions: Question[]) => {
+  const handleQuestionsGenerated = (newQuestions: Question[], newQuizId: string) => {
     setQuestions(newQuestions);
+    setQuizId(newQuizId);
     setCurrentQuestionIndex(0);
     setCurrentStep('questions');
     setStartTime(Date.now());
@@ -53,6 +56,23 @@ export default function Home() {
       skippedQuestions: 0,
       timeSpent: 0,
     });
+  };
+
+  const saveQuizResults = async () => {
+    if (!quizId) return;
+
+    try {
+      await fetch('/api/generate', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          quizId,
+          ...stats,
+        }),
+      });
+    } catch (error) {
+      console.error('Failed to save quiz results:', error);
+    }
   };
 
   const handleAnswerSubmit = (isCorrect: boolean) => {
@@ -77,6 +97,7 @@ export default function Home() {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
+      saveQuizResults();
       setCurrentStep('completion');
     }
   };
@@ -138,6 +159,16 @@ export default function Home() {
                   </li>
                 </ol>
               </div>
+
+              <CommunityQuizzes 
+                onQuizSelect={(text) => {
+                  // Reuse the text input's submit handler
+                  const textInput = document.querySelector('textarea');
+                  if (textInput) {
+                    (textInput as HTMLTextAreaElement).value = text;
+                  }
+                }} 
+              />
             </div>
           </>
         ) : currentStep === 'questions' ? (

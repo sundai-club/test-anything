@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import { prisma } from '@/lib/prisma';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -40,7 +41,7 @@ Please format your response as a JSON object with a "questions" array containing
 
     const completion = await openai.chat.completions.create({
       messages: [{ role: "user", content: prompt }],
-      model: "gpt-4o-mini",
+      model: "gpt-4-turbo-preview",
       temperature: 0.7,
       response_format: { type: "json_object" }
     });
@@ -51,12 +52,53 @@ Please format your response as a JSON object with a "questions" array containing
     }
 
     const parsedResponse = JSON.parse(response);
-    return NextResponse.json({ questions: parsedResponse.questions || [] });
+    const questions = parsedResponse.questions || [];
+
+    // Create a new quiz record
+    const quiz = await prisma.quiz.create({
+      data: {
+        text,
+        questions: JSON.stringify(questions),
+        totalQuestions: questions.length,
+        correctAnswers: 0,
+        skippedQuestions: 0,
+        timeSpent: 0,
+      },
+    });
+
+    return NextResponse.json({ 
+      questions,
+      quizId: quiz.id 
+    });
 
   } catch (error) {
     console.error('Error generating questions:', error);
     return NextResponse.json(
       { error: 'Failed to generate questions' },
+      { status: 500 }
+    );
+  }
+}
+
+// Add new endpoint to update quiz results
+export async function PATCH(request: Request) {
+  try {
+    const { quizId, correctAnswers, skippedQuestions, timeSpent } = await request.json();
+
+    const updatedQuiz = await prisma.quiz.update({
+      where: { id: quizId },
+      data: {
+        correctAnswers,
+        skippedQuestions,
+        timeSpent,
+      },
+    });
+
+    return NextResponse.json(updatedQuiz);
+  } catch (error) {
+    console.error('Error updating quiz:', error);
+    return NextResponse.json(
+      { error: 'Failed to update quiz results' },
       { status: 500 }
     );
   }
