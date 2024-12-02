@@ -107,6 +107,8 @@ export async function PATCH(request: Request) {
         correctAnswers,
         skippedQuestions,
         timeSpent,
+        timesCompleted: { increment: 1 },
+        totalScore: { increment: correctAnswers },
       },
     });
 

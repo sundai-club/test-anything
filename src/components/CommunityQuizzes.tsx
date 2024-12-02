@@ -9,6 +9,8 @@ type Quiz = {
   totalQuestions: number;
   correctAnswers: number;
   createdAt: string;
+  timesCompleted: number;
+  totalScore: number;
 };
 
 export default function CommunityQuizzes() {
@@ -42,45 +44,52 @@ export default function CommunityQuizzes() {
 
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-lg p-6 space-y-4">
-      <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+      <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
         Community Quizzes 
         <span className="text-sm font-normal text-gray-500">
           (Try quizzes from others!)
         </span>
       </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {quizzes.map((quiz) => (
           <div
             key={quiz.id}
             onClick={() => router.push(`/quiz/${quiz.id}`)}
-            className="group relative bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition-all cursor-pointer border border-gray-100"
+            className="group relative bg-white rounded-xl p-6 shadow hover:shadow-lg transition-all cursor-pointer border border-gray-200 hover:border-blue-100"
           >
-            <div className="space-y-3">
-              <div className="flex items-start justify-between">
-                <div className="space-y-1 flex-1">
-                  <h3 className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
-                    {quiz.name}
-                  </h3>
-                  <p className="text-sm text-gray-600 line-clamp-2">
-                    {quiz.text.substring(0, 100)}...
-                  </p>
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <span className="flex items-center gap-1">
-                      📝 {quiz.totalQuestions} questions
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <h3 className="font-semibold text-lg text-gray-900 group-hover:text-blue-600 transition-colors">
+                  {quiz.name}
+                </h3>
+                <div className="flex items-center gap-3 text-sm text-gray-600 flex-wrap">
+                  <span className="flex items-center gap-1.5">
+                    📝 {quiz.totalQuestions} questions
+                  </span>
+                  <span className="text-gray-300">•</span>
+                  {quiz.timesCompleted > 0 ? (
+                    <>
+                      <span className="flex items-center gap-1.5">
+                        👥 {quiz.timesCompleted} {quiz.timesCompleted === 1 ? 'attempt' : 'attempts'}
+                      </span>
+                      <span className="text-gray-300">•</span>
+                      <span className="flex items-center gap-1.5 font-medium">
+                        ⭐️ {Math.round((quiz.totalScore / (quiz.timesCompleted * quiz.totalQuestions)) * 100)}% avg score
+                      </span>
+                    </>
+                  ) : (
+                    <span className="flex items-center gap-1.5 text-blue-600 font-medium">
+                      🆕 Be the first to try!
                     </span>
-                    <span>•</span>
-                    <span className="flex items-center gap-1">
-                      ⭐️ {Math.round((quiz.correctAnswers / quiz.totalQuestions) * 100) || 0}% success
-                    </span>
-                  </div>
+                  )}
                 </div>
               </div>
               
-              <div className="flex justify-between items-center text-sm">
+              <div className="flex justify-between items-center text-sm pt-2 border-t border-gray-100">
                 <span className="text-gray-400">
                   {new Date(quiz.createdAt).toLocaleDateString()}
                 </span>
-                <span className="text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="text-blue-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
                   Take Quiz →
                 </span>
               </div>

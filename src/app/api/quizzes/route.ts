@@ -14,6 +14,8 @@ export async function GET() {
         totalQuestions: true,
         correctAnswers: true,
         createdAt: true,
+        timesCompleted: true,
+        totalScore: true,
       }
     });
 

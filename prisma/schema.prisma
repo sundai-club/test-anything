@@ -12,7 +12,7 @@ datasource db {
 
 model Quiz {
   id              String   @id @default(uuid())
-  name            String   // Now required
+  name            String   @default("Untitled Quiz")
   text            String
   questions       String
   totalQuestions  Int
@@ -20,4 +20,6 @@ model Quiz {
   skippedQuestions Int
   timeSpent       Int
   createdAt       DateTime @default(now())
+  timesCompleted  Int      @default(0)
+  totalScore      Int      @default(0)
 }
