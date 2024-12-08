@@ -65,7 +65,7 @@ const SUGGESTED_LINKS = {
   'Modern Dating': 'https://markmanson.net/guide-to-modern-dating'
 } as const;
 
-const MAX_CHARS = 10000; 
+const MAX_CHARS = 100000; 
 
 interface LoadingState {
   isLoading: boolean;
@@ -189,9 +189,6 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
         const data = await response.json();
         textToProcess = data.content;
       }
-
-      console.log('textToProcess Type:', typeof textToProcess);
-      console.log(textToProcess);
 
       const response = await fetch('/api/generate', {
         method: 'POST',
