@@ -54,6 +54,13 @@ const SUGGESTED_LINKS = {
   'Modern Dating': 'https://markmanson.net/guide-to-modern-dating'
 } as const;
 
+const MAX_CHARS = 100000;
+
+interface LoadingState {
+  isLoading: boolean;
+  wasTruncated: boolean;
+}
+
 export default function TextInput({ suggestedTopics }: TextInputProps) {
   const [inputMode, setInputMode] = useState<InputMode>('text');
   const [input, setInput] = useState('');
@@ -61,6 +68,11 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const [wasTruncated, setWasTruncated] = useState(false);
+  const [loadingState, setLoadingState] = useState<LoadingState>({
+    isLoading: false,
+    wasTruncated: false
+  });
 
   useEffect(() => {
     setInput('');
@@ -86,8 +98,17 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
     multiple: false
   });
 
+  const truncateText = (text: string) => {
+    if (text.length > MAX_CHARS) {
+      setLoadingState(prev => ({ ...prev, wasTruncated: true }));
+      return text.slice(0, MAX_CHARS);
+    }
+    setLoadingState(prev => ({ ...prev, wasTruncated: false }));
+    return text;
+  };
+
   const handleSubmit = async () => {
-    setIsLoading(true);
+    setLoadingState(prev => ({ ...prev, isLoading: true }));
     setError(null);
 
     let textToProcess = input;
@@ -112,7 +133,7 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
       }
 
       const data = await response.json();
-      textToProcess = data.content;
+      textToProcess = truncateText(data.content);
     } else if (inputMode === 'pdf') {
       if (!pdfFile) throw new Error('No PDF file selected');
       
@@ -126,7 +147,9 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
 
       if (!response.ok) throw new Error('Failed to parse PDF');
       const data = await response.json();
-      textToProcess = data.content;
+      textToProcess = truncateText(data.content);
+    } else {
+      textToProcess = truncateText(input);
     }
 
     try {
@@ -135,10 +158,17 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ text: textToProcess }),
+        body: JSON.stringify({ 
+          text: textToProcess,
+          wasTextTruncated: loadingState.wasTruncated 
+        }),
       });
 
       if (!response.ok) {
+        // Check specifically for timeout status
+        if (response.status === 504 || response.status === 408) {
+          throw new Error('Question generation took too long. We are working on fixing this issue. Please try again with a shorter text.');
+        }
         throw new Error('Failed to generate questions');
       }
 
@@ -146,16 +176,23 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
       router.push(`/quiz/${data.quizId}`);
     } catch (e: Error | unknown) {
       const errorMessage = e instanceof Error ? e.message : 'Unknown error occurred';
-      setError(`Failed to generate questions: ${errorMessage}`);
+      setError(`${errorMessage}`);
     } finally {
-      setIsLoading(false);
+      setLoadingState(prev => ({ ...prev, isLoading: false }));
     }
   };
 
   return (
     <div className="space-y-4 animate-fadeIn">
-      {isLoading ? (
-        <LoadingAnimation />
+      {loadingState.isLoading ? (
+        <>
+          {loadingState.wasTruncated && (
+            <div className="text-amber-600 text-sm bg-amber-50 p-3 rounded-lg border border-amber-200">
+              ⚠️ The input was too long and has been truncated to {MAX_CHARS.toLocaleString()} characters for optimal processing.
+            </div>
+          )}
+          <LoadingAnimation wasTruncated={loadingState.wasTruncated} />
+        </>
       ) : (
         <>
           <div className="flex justify-center mb-6">

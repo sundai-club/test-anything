@@ -40,10 +40,7 @@ export async function POST(request: Request) {
       .replace(/\s+/g, ' ')
       .trim();
 
-    // Limit content length if needed
-    const truncatedContent = finalContent.slice(0, 5000);
-
-    return NextResponse.json({ content: truncatedContent });
+    return NextResponse.json({ content: finalContent });
 
   } catch (error) {
     console.error('Error fetching URL:', error);
