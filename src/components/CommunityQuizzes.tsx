@@ -23,7 +23,10 @@ export default function CommunityQuizzes() {
       try {
         const response = await fetch('/api/quizzes');
         const data = await response.json();
-        setQuizzes(data);
+        const sortedQuizzes = data
+          .sort((a: Quiz, b: Quiz) => b.timesCompleted - a.timesCompleted)
+          .slice(0, 10);
+        setQuizzes(sortedQuizzes);
       } catch (error) {
         console.error('Error fetching quizzes:', error);
       } finally {

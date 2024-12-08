@@ -1,8 +1,12 @@
 'use client';
 
+interface LoadingAnimationProps {
+  wasTruncated: boolean;
+}
+
 const ANIMATION_DURATION = 25000;
 
-export default function LoadingAnimation() {
+export default function LoadingAnimation({ wasTruncated }: LoadingAnimationProps) {
   return (
     <div className="flex flex-col items-center space-y-4 p-8 bg-white/80 rounded-lg backdrop-blur-sm">
       <div className="flex flex-col items-center space-y-2">
