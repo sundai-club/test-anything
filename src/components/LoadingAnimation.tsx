@@ -1,5 +1,7 @@
 'use client';
 
+const ANIMATION_DURATION = 25000;
+
 export default function LoadingAnimation() {
   return (
     <div className="flex flex-col items-center space-y-4 p-8 bg-white/80 rounded-lg backdrop-blur-sm">
@@ -15,7 +17,7 @@ export default function LoadingAnimation() {
         {/* Progress bar */}
         <div className="w-64 h-2 bg-gray-200 rounded-full overflow-hidden">
           <div 
-            className="h-full bg-blue-500 transition-all duration-[15000ms] ease-linear w-0 animate-progress"
+            className="h-full bg-blue-500 transition-all duration-[${ANIMATION_DURATION}ms] ease-linear w-0 animate-progress"
           ></div>
         </div>
 
