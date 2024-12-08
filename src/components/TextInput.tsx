@@ -19,8 +19,10 @@ function ToggleSwitch({ mode, onToggle }: {
       <div className="relative flex w-[300px]">
         {/* Background Slider */}
         <div
-          className={`absolute h-full w-1/2 bg-white rounded-full shadow-md transform transition-transform duration-200 ease-in-out ${
-            mode === 'url' ? 'translate-x-full' : 'translate-x-0'
+          className={`absolute h-full w-1/3 bg-white rounded-full shadow-md transform transition-transform duration-200 ease-in-out ${
+            mode === 'url' ? 'translate-x-full' : 
+            mode === 'pdf' ? 'translate-x-[200%]' : 
+            'translate-x-0'
           }`}
         />
         
@@ -43,6 +45,15 @@ function ToggleSwitch({ mode, onToggle }: {
           <span className="text-lg">🔗</span>
           <span className="font-medium">URL</span>
         </button>
+        <button
+          onClick={() => onToggle('pdf')}
+          className={`flex-1 px-4 py-2 rounded-full z-10 transition-colors duration-200 flex items-center justify-center gap-2 ${
+            mode === 'pdf' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <span className="text-lg">📄</span>
+          <span className="font-medium">PDF</span>
+        </button>
       </div>
     </div>
   );
@@ -54,11 +65,18 @@ const SUGGESTED_LINKS = {
   'Modern Dating': 'https://markmanson.net/guide-to-modern-dating'
 } as const;
 
-const MAX_CHARS = 100000;
+const MAX_CHARS = 10000; 
 
 interface LoadingState {
   isLoading: boolean;
   wasTruncated: boolean;
+}
+
+// Add PDF.js type declaration
+declare global {
+  interface Window {
+    pdfjsLib: any;
+  }
 }
 
 export default function TextInput({ suggestedTopics }: TextInputProps) {
@@ -79,6 +97,22 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
     setPdfFile(null);
     setError(null);
   }, [inputMode]);
+
+  // Add useEffect to load PDF.js
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.3.122/pdf.min.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    script.onload = () => {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.3.122/pdf.worker.min.js';
+    };
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -107,52 +141,58 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
     return text;
   };
 
+  // Add new function for client-side PDF processing
+  const extractTextFromPDF = async (file: File): Promise<string> => {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdfDocument = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    
+    let fullText = '';
+    for (let i = 1; i <= pdfDocument.numPages; i++) {
+      const page = await pdfDocument.getPage(i);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items.map((item: { str: string }) => item.str).join(' ');
+      fullText += pageText + '\n';
+    }
+    return fullText;
+  };
+
   const handleSubmit = async () => {
     setLoadingState(prev => ({ ...prev, isLoading: true }));
     setError(null);
 
-    let textToProcess = input;
+    try {
+      let textToProcess = input;
 
-    if (inputMode === 'url') {
-      // Prepend https:// if no protocol is specified
-      const urlToFetch = input.startsWith('http://') || input.startsWith('https://')
-        ? input
-        : `https://${input}`;
+      if (inputMode === 'pdf') {
+        if (!pdfFile) throw new Error('No PDF file selected');
+        textToProcess = await extractTextFromPDF(pdfFile);
+        textToProcess = truncateText(textToProcess);
+      } else if (inputMode === 'url') {
+        // Prepend https:// if no protocol is specified
+        const urlToFetch = input.startsWith('http://') || input.startsWith('https://')
+          ? input
+          : `https://${input}`;
 
-      // Fetch content from URL
-      const response = await fetch('/api/fetch-url', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ url: urlToFetch }),
-      });
+        // Fetch content from URL
+        const response = await fetch('/api/fetch-url', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ url: urlToFetch }),
+        });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch URL content');
+        if (!response.ok) {
+          throw new Error('Failed to fetch URL content');
+        }
+
+        const data = await response.json();
+        textToProcess = data.content;
       }
 
-      const data = await response.json();
-      textToProcess = truncateText(data.content);
-    } else if (inputMode === 'pdf') {
-      if (!pdfFile) throw new Error('No PDF file selected');
-      
-      const formData = new FormData();
-      formData.append('pdf', pdfFile);
+      console.log('textToProcess Type:', typeof textToProcess);
+      console.log(textToProcess);
 
-      const response = await fetch('/api/parse-pdf', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) throw new Error('Failed to parse PDF');
-      const data = await response.json();
-      textToProcess = truncateText(data.content);
-    } else {
-      textToProcess = truncateText(input);
-    }
-
-    try {
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: {
@@ -164,19 +204,21 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
         }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        // Check specifically for timeout status
-        if (response.status === 504 || response.status === 408) {
-          throw new Error('Question generation took too long. We are working on fixing this issue. Please try again with a shorter text.');
-        }
-        throw new Error('Failed to generate questions');
+        throw new Error(data.error || 'Failed to generate questions');
       }
 
-      const data = await response.json();
+      if (!data.quizId) {
+        throw new Error('No quiz ID received from server');
+      }
+
       router.push(`/quiz/${data.quizId}`);
-    } catch (e: Error | unknown) {
-      const errorMessage = e instanceof Error ? e.message : 'Unknown error occurred';
-      setError(`${errorMessage}`);
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : 'An unexpected error occurred';
+      setError(errorMessage);
+      console.error('Error in handleSubmit:', e);
     } finally {
       setLoadingState(prev => ({ ...prev, isLoading: false }));
     }
