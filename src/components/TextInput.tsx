@@ -169,6 +169,16 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
         textToProcess = await extractTextFromPDF(pdfFile);
         textToProcess = truncateText(textToProcess);
       } else if (inputMode === 'url') {
+        if (input.toLowerCase().endsWith('.pdf')) {
+          setError(
+            'PDF URLs cannot be processed directly. Please:\n' +
+            '1. Download the PDF to your computer\n' +
+            '2. Switch to PDF mode using the toggle above\n' +
+            '3. Upload the downloaded PDF file'
+          );
+          return;
+        }
+
         try {
           const response = await fetch('/api/fetch-url', {
             method: 'POST',
