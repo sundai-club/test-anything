@@ -33,7 +33,75 @@ An interactive learning tool that automatically generates quiz questions from an
 
 ## Getting Started 🚀
 
-1. Clone the repository:
+1. Fork and clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/learn-
+git clone https://github.com/yourusername/learn-anything.git
+```
+
+2. Navigate to the project directory:
+
+```bash
+cd learn-anything
+```
+
+3. Install dependencies:
+
+```bash
+npm install
+```
+
+4. Start the development server:
+
+```bash
+npm run dev
+```
+
+5. Environment variables:
+
+```bash
+cp .env.example .env
+```
+
+6. Install Postgres and Start the server:
+
+Note: these are instructions for MacOSX. If you're on Windows or Linux, you'll need to find the equivalent commands.
+```bash
+brew install postgresql
+brew services start postgresql
+
+Or, if you don't want/need a background service you can just run:
+  /opt/homebrew/opt/postgresql@14/bin/postgres -D /opt/homebrew/var/postgresql@14
+
+```
+
+
+7. Create a database user:
+
+```bash
+createuser -s postgres
+```
+
+8. Create a database:
+
+```bash
+psql -U postgres -c "CREATE DATABASE quizme;"
+```
+
+8. Migrate the database:
+
+```bash
+npx prisma migrate dev
+```
+
+9. Inspect the database:
+
+```bash
+npx prisma studio
+```
+
+10. Run the server:
+
+```bash
+npm run dev
+```
