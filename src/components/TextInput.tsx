@@ -91,6 +91,7 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
     isLoading: false,
     wasTruncated: false
   });
+  const [content, setContent] = useState('');
 
   useEffect(() => {
     setInput('');
@@ -168,26 +169,44 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
         textToProcess = await extractTextFromPDF(pdfFile);
         textToProcess = truncateText(textToProcess);
       } else if (inputMode === 'url') {
-        // Prepend https:// if no protocol is specified
-        const urlToFetch = input.startsWith('http://') || input.startsWith('https://')
-          ? input
-          : `https://${input}`;
-
-        // Fetch content from URL
-        const response = await fetch('/api/fetch-url', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ url: urlToFetch }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch URL content');
+        if (input.toLowerCase().endsWith('.pdf')) {
+          setError(
+            'PDF URLs cannot be processed directly. Please:\n' +
+            '1. Download the PDF to your computer\n' +
+            '2. Switch to PDF mode using the toggle above\n' +
+            '3. Upload the downloaded PDF file'
+          );
+          return;
         }
 
-        const data = await response.json();
-        textToProcess = data.content;
+        try {
+          const response = await fetch('/api/fetch-url', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ url: input }),
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            if (data.type === 'SCRAPING_BLOCKED') {
+              setError(
+                'This website does not allow content scraping. Please try one of these alternatives:\n' +
+                '1. Generate a PDF of the page and upload it\n' +
+                '2. Copy and paste the text content directly'
+              );
+              return;
+            }
+            throw new Error(data.error || 'Failed to fetch URL content');
+          }
+
+          textToProcess = data.content;
+        } catch (error) {
+          setError(error instanceof Error ? error.message : 'Failed to fetch URL content');
+          return;
+        }
       }
 
       const response = await fetch('/api/generate', {
