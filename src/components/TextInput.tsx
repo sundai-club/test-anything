@@ -3,6 +3,7 @@ import { useState, useCallback, useEffect } from 'react';
 import LoadingAnimation from './LoadingAnimation';
 import { useDropzone } from 'react-dropzone';
 import { useRouter } from 'next/navigation';
+import { useExtendedUser } from '../providers/UserProvider';
 
 interface TextInputProps {
   suggestedTopics: Record<string, string>;
@@ -91,6 +92,8 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
     isLoading: false,
     wasTruncated: false
   });
+  const { user } = useExtendedUser();
+
 
   useEffect(() => {
     setInput('');
@@ -157,6 +160,11 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
   };
 
   const handleSubmit = async () => {
+    if (!user) {
+      setError('You must be logged in to create a quiz');
+      return;
+    }
+
     setLoadingState(prev => ({ ...prev, isLoading: true }));
     setError(null);
 
@@ -168,12 +176,10 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
         textToProcess = await extractTextFromPDF(pdfFile);
         textToProcess = truncateText(textToProcess);
       } else if (inputMode === 'url') {
-        // Prepend https:// if no protocol is specified
         const urlToFetch = input.startsWith('http://') || input.startsWith('https://')
           ? input
           : `https://${input}`;
 
-        // Fetch content from URL
         const response = await fetch('/api/fetch-url', {
           method: 'POST',
           headers: {
@@ -197,7 +203,8 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
         },
         body: JSON.stringify({ 
           text: textToProcess,
-          wasTextTruncated: loadingState.wasTruncated 
+          wasTextTruncated: loadingState.wasTruncated,
+          userId: user.id // Pass user ID to associate quiz
         }),
       });
 

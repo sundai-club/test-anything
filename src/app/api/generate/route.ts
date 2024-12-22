@@ -10,7 +10,7 @@ const openai = new OpenAI({
 
 export async function POST(request: Request) {
   try {
-    const { text } = await request.json();
+    const { text, userId } = await request.json();
 
     if (!text || text.trim().length === 0) {
       return NextResponse.json(
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
     const parsedResponse = JSON.parse(response);
     const questions = parsedResponse.questions || [];
 
-    // Create a new quiz record with the name
+    // Create a new quiz record with the name and associate it with the user
     const quiz = await prisma.quiz.create({
       data: {
         name: quizName,
@@ -81,6 +81,7 @@ export async function POST(request: Request) {
         correctAnswers: 0,
         skippedQuestions: 0,
         timeSpent: 0,
+        userId, // Associate quiz with user
       },
     });
 

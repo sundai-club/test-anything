@@ -7,9 +7,12 @@
     "build": "prisma generate && prisma migrate deploy && next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "db:backup": "./scripts/backup_db.sh",
+    "db:restore": "./scripts/restore_db.sh"
   },
   "dependencies": {
+    "@clerk/nextjs": "^6.9.2",
     "@prisma/client": "^6.0.0",
     "cheerio": "^1.0.0",
     "framer-motion": "^11.12.0",
