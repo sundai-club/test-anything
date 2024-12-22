@@ -9,6 +9,13 @@ interface Quiz {
   name: string;
   createdAt: string;
   totalScore: number;
+  totalQuestions: number;
+  timesCompleted: number;
+  correctAnswers: number;
+  skippedQuestions: number;
+  timeSpent: number;
+  text: string;
+  questions: string;
 }
 
 function LoadingScreen() {
