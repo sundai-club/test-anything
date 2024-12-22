@@ -4,6 +4,7 @@ import LoadingAnimation from './LoadingAnimation';
 import { useDropzone } from 'react-dropzone';
 import { useRouter } from 'next/navigation';
 import { useExtendedUser } from '../providers/UserProvider';
+import { useClerk } from '@clerk/clerk-react';
 
 interface TextInputProps {
   suggestedTopics: Record<string, string>;
@@ -93,6 +94,7 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
     wasTruncated: false
   });
   const { user } = useExtendedUser();
+  const { openSignIn } = useClerk();
 
 
   useEffect(() => {
@@ -161,7 +163,7 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
 
   const handleSubmit = async () => {
     if (!user) {
-      setError('You must be logged in to create a quiz');
+      openSignIn(); // Open the Clerk sign-in modal
       return;
     }
 
