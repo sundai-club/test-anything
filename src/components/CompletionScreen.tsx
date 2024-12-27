@@ -1,4 +1,7 @@
 'use client';
+import React, { useState } from "react";
+
+import { Question } from "@/types";
 
 interface CompletionStats {
   totalQuestions: number;
@@ -7,12 +10,14 @@ interface CompletionStats {
   timeSpent: number; // in seconds
 }
 
-export default function CompletionScreen({ 
-  stats, 
+export default function CompletionScreen({
+  stats,
+  questions,
   onRestart,
   quizId
-}: { 
+}: {
   stats: CompletionStats;
+  questions: Question[];
   onRestart: () => void;
   quizId?: string;
 }) {
@@ -20,10 +25,24 @@ export default function CompletionScreen({
   const minutes = Math.floor(stats.timeSpent / 60);
   const seconds = stats.timeSpent % 60;
 
+  const [feedback, setFeedback] = useState<Record<number, string>>({});
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleFeedback = (index: number, value: string) => {
+    setFeedback((prev) => ({
+      ...prev,
+      [index]: value,
+    }));
+  };
+
+  const handleSubmit = () => {
+    setSubmitted(true);
+  };
+
   const handleShare = async () => {
     if (quizId) {
       const shareUrl = `${window.location.origin}/quiz/${quizId}`;
-      
+
       if (navigator.share) {
         try {
           await navigator.share({
@@ -163,6 +182,73 @@ export default function CompletionScreen({
           </button>
         </div>
       </div>
+
+      {/* Feedback Section */}
+      {submitted ? (
+        <p>Your feedback has been submitted, thank you!</p>
+      ) : (
+        <div>
+          <div className="question-list">
+            <h3>(Optional) Review and Rate Questions</h3>
+            <ul>
+              {questions.map((questionObj, index) => (
+                <li key={index}>
+                  <p>
+                    <strong>Q{index + 1}:</strong> {questionObj.question}
+                  </p>
+                  <ul>
+                    {questionObj.options.map((option, optIndex) => (
+                      <li key={optIndex}>
+                        {option}
+                        {option === questionObj.correctAnswer && <strong>(Correct)</strong>}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="feedback-buttons">
+                    <button
+                      onClick={() => handleFeedback(index, "thumbs-up")}
+                      style={{
+                        backgroundColor:
+                          feedback[index] === "thumbs-up" ? "lightgreen" : "white",
+                        color: feedback[index] === "thumbs-up" ? "black" : "gray",
+                        border:
+                          feedback[index] === "thumbs-up"
+                            ? "2px solid green"
+                            : "1px solid gray",
+                      }}
+                    >
+                      👍
+                    </button>
+                    <button
+                      onClick={() => handleFeedback(index, "thumbs-down")}
+                      style={{
+                        backgroundColor:
+                          feedback[index] === "thumbs-down" ? "lightcoral" : "white",
+                        color: feedback[index] === "thumbs-down" ? "black" : "gray",
+                        border:
+                          feedback[index] === "thumbs-down"
+                            ? "2px solid red"
+                            : "1px solid gray",
+                      }}
+                    >
+                      👎
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <button
+            className="submit-button"
+            onClick={handleSubmit}
+            style={{ marginTop: "20px" }}
+          >
+            Submit Feedback
+          </button>
+        </div>
+      )}
+
     </div>
+
   );
 } 

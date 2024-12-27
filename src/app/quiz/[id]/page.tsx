@@ -125,6 +125,7 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
         ) : (
           <CompletionScreen
             stats={stats}
+            questions={questions}
             onRestart={() => router.push('/')}
             quizId={resolvedParams.id}
           />
