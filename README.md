@@ -74,6 +74,15 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+### 3. Install Ngrok and Set Up Clerk Webhook
+
+Clerk uses webhooks to notify your application about authentication events. To test this locally, you need **ngrok** to expose your development server.
+
+Follow the steps 1, 2 and 3 from this link.
+https://clerk.com/docs/webhooks/sync-data
+
+The SignIn Secret key should be set as WEBHOOK_SECRET in the environment file.
+
 
 ## Learn More
 
