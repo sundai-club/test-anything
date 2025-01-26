@@ -1,5 +1,21 @@
 import { NextResponse } from 'next/server';
 import * as cheerio from 'cheerio';
+import robotsParser from 'robots-parser';
+
+async function checkRobotsTxt(url: string) {
+  try {
+    const parsedUrl = new URL(url);
+    const robotsTxtUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}/robots.txt`;
+    const response = await fetch(robotsTxtUrl);
+    const robotsTxt = await response.text();
+    const robots = robotsParser(robotsTxtUrl, robotsTxt);
+    
+    return robots.isAllowed(url);
+  } catch (error) {
+    console.error('Error checking robots.txt:', error);
+    return true; // If we can't check robots.txt, we'll assume it's allowed
+  }
+}
 
 export async function POST(request: Request) {
   try {
@@ -10,6 +26,16 @@ export async function POST(request: Request) {
         { error: 'URL is required' },
         { status: 400 }
       );
+    }
+
+    // Check if scraping is allowed
+    const isAllowed = await checkRobotsTxt(url);
+    
+    if (!isAllowed) {
+      return NextResponse.json({
+        error: 'This website does not allow content scraping. Please try generating a PDF of the content instead.',
+        type: 'SCRAPING_BLOCKED'
+      }, { status: 403 });
     }
 
     // Fetch the webpage
