@@ -53,7 +53,7 @@ The database will be available at:
 - Port: 5432
 - User: postgres
 - Password: postgres
-- Database: learn_anything
+- Database: quizme
 
 ### 2. Run the Development Server
 ```bash
