@@ -3,6 +3,8 @@ import { useState, useCallback, useEffect } from 'react';
 import LoadingAnimation from './LoadingAnimation';
 import { useDropzone } from 'react-dropzone';
 import { useRouter } from 'next/navigation';
+import { useExtendedUser } from '../providers/UserProvider';
+import { useClerk } from '@clerk/clerk-react';
 
 interface TextInputProps {
   suggestedTopics: Record<string, string>;
@@ -91,7 +93,10 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
     isLoading: false,
     wasTruncated: false
   });
+
   const [content, setContent] = useState('');
+  const { user } = useExtendedUser();
+  const { openSignIn } = useClerk();
 
   useEffect(() => {
     setInput('');
@@ -158,6 +163,11 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
   };
 
   const handleSubmit = async () => {
+    if (!user) {
+      openSignIn(); // Open the Clerk sign-in modal
+      return;
+    }
+
     setLoadingState(prev => ({ ...prev, isLoading: true }));
     setError(null);
 
@@ -187,7 +197,17 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
             },
             body: JSON.stringify({ url: input }),
           });
+        const urlToFetch = input.startsWith('http://') || input.startsWith('https://')
+          ? input
+          : `https://${input}`;
 
+        const response = await fetch('/api/fetch-url', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ url: urlToFetch }),
+        });
           const data = await response.json();
 
           if (!response.ok) {
@@ -216,7 +236,8 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
         },
         body: JSON.stringify({ 
           text: textToProcess,
-          wasTextTruncated: loadingState.wasTruncated 
+          wasTextTruncated: loadingState.wasTruncated,
+          userId: user.id // Pass user ID to associate quiz
         }),
       });
 

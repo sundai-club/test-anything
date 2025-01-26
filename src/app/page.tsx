@@ -13,12 +13,12 @@ const SUGGESTED_TOPICS = {
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-100 to-blue-100 p-4 sm:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-50 p-4 sm:p-8">
       <main className="max-w-3xl mx-auto space-y-8 animate-fadeIn">
         <header className="text-center space-y-6">
-          <h1 className="text-5xl font-bold text-gray-900">
-            QuizMe App 🧠
-          </h1>
+          {/* <h1 className="text-5xl font-bold text-gray-900">
+            QuizMe 🧠
+          </h1> */}
           <p className="text-xl text-gray-700 max-w-2xl mx-auto">
             Transform any text into an interactive quiz using AI. Perfect for studying, 
             learning new topics, or testing your knowledge!
