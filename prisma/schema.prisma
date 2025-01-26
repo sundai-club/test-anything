@@ -10,16 +10,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id    String  @id @default(uuid())
+  email String  @unique
+  username  String
+  clerkId String @unique
+  quizzes Quiz[]
+}
+
 model Quiz {
-  id              String   @id @default(uuid())
-  name            String   @default("Untitled Quiz")
-  text            String
-  questions       String
-  totalQuestions  Int
-  correctAnswers  Int
+  id               String   @id @default(uuid())
+  name             String   @default("Untitled Quiz")
+  text             String
+  questions        String
+  totalQuestions   Int
+  correctAnswers   Int
   skippedQuestions Int
-  timeSpent       Int
-  createdAt       DateTime @default(now())
-  timesCompleted  Int      @default(0)
-  totalScore      Int      @default(0)
+  timeSpent        Int
+  createdAt        DateTime @default(now())
+  timesCompleted   Int      @default(0)
+  totalScore       Int      @default(0)
+  userId           String? 
+  user             User?     @relation(fields: [userId], references: [id])
 }
