@@ -77,16 +77,28 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
     } else {
       setIsComplete(true);
       try {
-        await fetch('/api/generate', {
+        const response = await fetch('/api/generate', {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             quizId: resolvedParams.id,
-            ...stats,
+            correctAnswers: stats.correctAnswers,
+            skippedQuestions: stats.skippedQuestions,
+            timeSpent: stats.timeSpent,
           }),
         });
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `Failed with status: ${response.status}`);
+        }
+        
+        // Successfully updated quiz stats
+        console.log('Quiz stats updated successfully');
       } catch (error) {
-        console.error('Failed to save results:', error);
+        // Non-blocking error - we still want to show completion screen
+        console.error('Failed to save quiz results:', error);
+        // We don't set an error state here as it's not critical to the user experience
       }
     }
   };
@@ -125,6 +137,7 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
         ) : (
           <CompletionScreen
             stats={stats}
+            questions={questions}
             onRestart={() => router.push('/')}
             quizId={resolvedParams.id}
           />
