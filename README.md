@@ -5,16 +5,19 @@ An interactive learning tool that automatically generates quiz questions from an
 ## Features ✨
 
 - **Instant Question Generation**: Paste any text and get intelligent multiple-choice questions
-- **AI-Powered**: Utilizes GPT-4 to create relevant and challenging questions
+- **AI-Powered**: Utilizes GPT-4 Turbo to create relevant and challenging questions
 - **Interactive Quiz Interface**: User-friendly design with immediate feedback
 - **Progress Tracking**: Monitor your progress through the question set
 - **Helpful Hints**: Get assistance when you're stuck on a question
 - **Mobile Responsive**: Works seamlessly on all devices
 - **Modern UI**: Clean, accessible interface with smooth animations
+- **URL Content Extraction**: Generate quizzes directly from web pages
+- **User Authentication**: Secure login and user-specific quiz history
+- **Community Quizzes**: Explore and attempt quizzes created by other users
 
 ## How It Works 🛠️
 
-1. **Input**: Paste any study material, article, or text content into the input field
+1. **Input**: Paste any study material, article, or text content into the input field, or provide a URL
 2. **Generation**: Our AI analyzes the content and creates targeted multiple-choice questions
 3. **Quiz**: Answer the questions one by one, with options to:
    - Submit an answer and get immediate feedback
@@ -22,29 +25,64 @@ An interactive learning tool that automatically generates quiz questions from an
    - Skip questions
    - Track your progress
 4. **Review**: See your performance and start over with new material
+5. **Share**: Your quizzes are saved to your account and can be shared with the community
 
 ## Technology Stack 💻
 
-- **Frontend**: Next.js with TypeScript
+- **Frontend**: Next.js 15.0.3 with TypeScript and React 18
+- **Backend**: Next.js API routes with Prisma ORM
+- **Database**: PostgreSQL (containerized with Docker)
+- **AI Integration**: OpenAI GPT-4 Turbo
+- **Authentication**: Clerk
 - **Styling**: Tailwind CSS
-- **AI Integration**: OpenAI GPT-4
-- **Animations**: CSS transitions
-- **State Management**: React Hooks
+- **Deployment**: Vercel
+- **Web Scraping**: Cheerio for URL content extraction
 
 ## Getting Started
-### 1. Start the Database
 
-First, start the PostgreSQL database using Docker:
+### Prerequisites
+
+- Node.js 18.17.0 or higher
+- Docker and Docker Compose
+- OpenAI API key
+- Clerk account and API keys
+
+### Environment Setup
+
+1. Clone the repository
+2. Create a `.env.local` file in the root directory with the following variables:
+
+```
+OPENAI_API_KEY=your_openai_api_key
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/learn_anything
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+CLERK_SECRET_KEY=your_clerk_secret_key
+```
+
+### 1. Docker Setup for Database
+
+The application uses PostgreSQL in Docker for local development. Here's how to set it up:
 
 ```bash
-# Start the database
+# Start the database containers
 docker-compose up -d
+```
 
-# To stop the database
-docker-compose down
+This command starts two containers:
+- `postgres`: The main PostgreSQL database server
+- `backup`: A service that creates regular backups of the database
 
-# To view database logs
-docker-compose logs -f postgres
+To verify the containers are running:
+
+```bash
+docker ps
+```
+
+You should see output similar to:
+```
+CONTAINER ID   IMAGE             COMMAND                   STATUS                    PORTS                    NAMES
+bd8640303c5d   postgres:latest   "bash -c '\n  while t…"   Up 27 minutes             5432/tcp                 test-anything-backup-1
+f0d97b285653   postgres:latest   "docker-entrypoint.s…"    Up 27 minutes (healthy)   0.0.0.0:5432->5432/tcp   test-anything-postgres-1
 ```
 
 The database will be available at:
@@ -53,121 +91,197 @@ The database will be available at:
 - Port: 5432
 - User: postgres
 - Password: postgres
-- Database: quizme
+- Database: learn_anything
 
-### 2. Run the Development Server
+To view database logs:
+```bash
+docker-compose logs -f postgres
+```
+
+To stop the database:
+```bash
+docker-compose down
+```
+
+### 2. Initialize the Database
+
+After starting the Docker containers, you need to initialize the database with the Prisma schema:
+
 ```bash
 # Install dependencies
 npm install
 
-# Run database migrations
-npx prisma migrate dev
+# Generate Prisma client
+npx prisma generate
 
-# Seed the database (optional)
-npx prisma db seed
-
-# Start the development server
-npm run dev
-```
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-### 3. Install Ngrok and Set Up Clerk Webhook
-
-Clerk uses webhooks to notify your application about authentication events. To test this locally, you need **ngrok** to expose your development server.
-
-Follow the steps 1, 2 and 3 from this link.
-https://clerk.com/docs/webhooks/sync-data
-
-The SignIn Secret key should be set as WEBHOOK_SECRET in the environment file.
-
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
-=======
-1. Fork and clone the repository:
-
-```bash
-git clone https://github.com/yourusername/learn-anything.git
+# Run database migrations (explicitly setting the DATABASE_URL)
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/learn_anything" npx prisma migrate dev
 ```
 
-2. Navigate to the project directory:
+This will create all necessary tables in the PostgreSQL database.
 
-```bash
-cd learn-anything
-```
-
-3. Install dependencies:
-
-```bash
-npm install
-```
-
-4. Start the development server:
-
-```bash
-npm run dev
-```
-
-5. Environment variables:
-
-```bash
-cp .env.example .env
-```
-
-6. Install Postgres and Start the server:
-
-Note: these are instructions for MacOSX. If you're on Windows or Linux, you'll need to find the equivalent commands.
-```bash
-brew install postgresql
-brew services start postgresql
-
-Or, if you don't want/need a background service you can just run:
-  /opt/homebrew/opt/postgresql@14/bin/postgres -D /opt/homebrew/var/postgresql@14
-
-```
-
-
-7. Create a database user:
-
-```bash
-createuser -s postgres
-```
-
-8. Create a database:
-
-```bash
-psql -U postgres -c "CREATE DATABASE quizme;"
-```
-
-8. Migrate the database:
-
-```bash
-npx prisma migrate dev
-```
-
-9. Inspect the database:
-
+To inspect the database with Prisma Studio:
 ```bash
 npx prisma studio
 ```
 
-10. Run the server:
+### 3. Run the Development Server
 
 ```bash
+# Start the development server
 npm run dev
 ```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
+
+### 4. Complete Local Deployment
+
+For a complete local deployment, follow these steps:
+
+1. Ensure Docker containers are running:
+   ```bash
+   docker ps
+   ```
+
+2. If containers are not running, start them:
+   ```bash
+   docker-compose up -d
+   ```
+
+3. Verify database connection:
+   ```bash
+   DATABASE_URL="postgresql://postgres:postgres@localhost:5432/learn_anything" npx prisma db push
+   ```
+
+4. Start the Next.js development server:
+   ```bash
+   npm run dev
+   ```
+
+5. Verify the application is running by visiting:
+   - Main application: [http://localhost:3000](http://localhost:3000)
+   - Prisma Studio (optional): [http://localhost:5555](http://localhost:5555) (after running `npx prisma studio`)
+
+### 5. Set Up Clerk Webhook (Optional for Local Development)
+
+Clerk uses webhooks to notify your application about authentication events. To test this locally, you need **ngrok** to expose your development server.
+
+1. Install ngrok: https://ngrok.com/download
+2. Start ngrok to expose your local server:
+   ```bash
+   ngrok http 3000
+   ```
+3. Configure the webhook in your Clerk dashboard using the ngrok URL
+4. Set the webhook secret in your `.env.local` file:
+   ```
+   WEBHOOK_SECRET=your_webhook_secret
+   ```
+
+## Troubleshooting
+
+### Common Issues and Solutions
+
+#### Database Connection Issues
+
+If you encounter database connection errors:
+
+1. Ensure Docker containers are running:
+   ```bash
+   docker ps
+   ```
+2. Verify the DATABASE_URL in your environment variables
+3. Run migrations explicitly with the DATABASE_URL:
+   ```bash
+   DATABASE_URL="postgresql://postgres:postgres@localhost:5432/learn_anything" npx prisma migrate dev
+   ```
+
+#### Authentication Errors
+
+If you encounter authentication issues:
+
+1. Check that your Clerk API keys are correct in `.env.local`
+2. Ensure the middleware configuration is correct in `src/middleware.ts`
+3. Clear browser cookies and local storage
+
+#### API Errors
+
+If you encounter API errors:
+
+1. Check the server logs for detailed error messages
+2. Ensure the database tables exist by running migrations
+3. Verify that the OpenAI API key is valid
+
+## Deployment
+
+### Deploying to Vercel
+
+1. Push your changes to GitHub:
+   ```bash
+   git add .
+   git commit -m "Your commit message"
+   git push
+   ```
+
+2. Import your repository in the Vercel dashboard
+
+3. Configure the following environment variables in Vercel:
+   - `OPENAI_API_KEY`
+   - `DATABASE_URL` (use a production PostgreSQL database)
+   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+   - `CLERK_SECRET_KEY`
+
+4. Deploy the application
+
+## Project Structure
+
+```
+/
+├── prisma/                # Database schema and migrations
+├── public/                # Static assets
+├── src/
+│   ├── app/               # Next.js app router
+│   │   ├── api/           # API routes
+│   │   └── page.tsx       # Home page
+│   ├── components/        # React components
+│   ├── lib/               # Utility functions and libraries
+│   ├── providers/         # React context providers
+│   └── middleware.ts      # Authentication middleware
+├── .env.local             # Environment variables (local)
+├── docker-compose.yaml    # Docker configuration
+├── package.json           # Dependencies and scripts
+├── vercel.json            # Vercel deployment configuration
+└── vercel-build.js        # Custom build script for Vercel
+```
+
+## Recent Fixes and Improvements
+
+### Database Configuration
+- Fixed PostgreSQL connection issues in Docker
+- Added proper initialization of database tables via Prisma migrations
+- Ensured correct environment variable handling for database connections
+
+### Authentication
+- Simplified Clerk middleware configuration for better compatibility
+- Added automatic user creation when a new user logs in
+- Fixed authentication flow for protected routes
+
+### Error Handling
+- Improved error handling in API routes
+- Added graceful fallbacks for missing data
+- Enhanced user feedback for error states
+
+### Deployment
+- Added custom Vercel build script for better deployment compatibility
+- Configured Vercel with legacy peer dependencies flag
+- Created fallback landing page for deployment issues
+
+## Learn More
+
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Prisma Documentation](https://www.prisma.io/docs)
+- [Clerk Documentation](https://clerk.com/docs)
+- [OpenAI API Documentation](https://platform.openai.com/docs/api-reference)
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.

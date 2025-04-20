@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "buildCommand": "node vercel-build.js",
+  "installCommand": "npm install --legacy-peer-deps",
+  "framework": "nextjs",
+  "regions": ["iad1"],
+  "env": {
+    "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": "${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}",
+    "CLERK_SECRET_KEY": "${CLERK_SECRET_KEY}",
+    "OPENAI_API_KEY": "${OPENAI_API_KEY}",
+    "DATABASE_URL": "${DATABASE_URL}"
+  }
+}

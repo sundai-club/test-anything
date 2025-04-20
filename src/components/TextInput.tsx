@@ -190,24 +190,17 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
         }
 
         try {
+          const urlToFetch = input.startsWith('http://') || input.startsWith('https://')
+            ? input
+            : `https://${input}`;
+
           const response = await fetch('/api/fetch-url', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ url: input }),
+            body: JSON.stringify({ url: urlToFetch }),
           });
-        const urlToFetch = input.startsWith('http://') || input.startsWith('https://')
-          ? input
-          : `https://${input}`;
-
-        const response = await fetch('/api/fetch-url', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ url: urlToFetch }),
-        });
           const data = await response.json();
 
           if (!response.ok) {
