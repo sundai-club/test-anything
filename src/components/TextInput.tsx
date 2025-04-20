@@ -72,6 +72,7 @@ const MAX_CHARS = 100000;
 interface LoadingState {
   isLoading: boolean;
   wasTruncated: boolean;
+  truncationMessage?: string;
 }
 
 // Add PDF.js type declaration
@@ -216,6 +217,15 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
           }
 
           textToProcess = data.content;
+          
+          // Update loading state if content was truncated
+          if (data.wasTruncated) {
+            setLoadingState(prev => ({ 
+              ...prev, 
+              wasTruncated: true,
+              truncationMessage: 'The content from this URL was too long and has been truncated to fit within AI processing limits.'
+            }));
+          }
         } catch (error) {
           setError(error instanceof Error ? error.message : 'Failed to fetch URL content');
           return;
@@ -260,7 +270,7 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
         <>
           {loadingState.wasTruncated && (
             <div className="text-amber-600 text-sm bg-amber-50 p-3 rounded-lg border border-amber-200">
-              ⚠️ The input was too long and has been truncated to {MAX_CHARS.toLocaleString()} characters for optimal processing.
+              ⚠️ {loadingState.truncationMessage || `The input was too long and has been truncated to ${MAX_CHARS.toLocaleString()} characters for optimal processing.`}
             </div>
           )}
           <LoadingAnimation wasTruncated={loadingState.wasTruncated} />
