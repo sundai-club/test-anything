@@ -53,11 +53,27 @@ An interactive learning tool that automatically generates quiz questions from an
 2. Create a `.env.local` file in the root directory with the following variables:
 
 ```
+# OpenAI API key for generating quizzes
 OPENAI_API_KEY=your_openai_api_key
+
+# PostgreSQL database connection string
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/learn_anything
+
+# Clerk authentication keys
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
 CLERK_SECRET_KEY=your_clerk_secret_key
 ```
+
+#### Environment Variables Explained
+
+- **OPENAI_API_KEY**: Required for the AI-powered quiz generation. You can obtain this from the [OpenAI platform](https://platform.openai.com/).
+- **DATABASE_URL**: Connection string for the PostgreSQL database. The format is: `postgresql://[user]:[password]@[host]:[port]/[database]`
+  - For local development with Docker, use: `postgresql://postgres:postgres@localhost:5432/learn_anything`
+  - For production, use your hosted PostgreSQL database URL
+- **NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY**: Public key for Clerk authentication, used on the client-side
+- **CLERK_SECRET_KEY**: Secret key for Clerk authentication, used on the server-side
+
+> **Important Security Note**: Never commit your `.env.local` file to version control. It contains sensitive API keys and credentials. The repository's `.gitignore` file should already exclude this file.
 
 ### 1. Docker Setup for Database
 

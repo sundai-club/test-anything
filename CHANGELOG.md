@@ -68,6 +68,17 @@ These changes prepare the application for smooth deployment to Vercel by:
 ### Justification:
 The previous documentation was incomplete and didn't address common setup issues. Our updated documentation makes it easier for new developers to get started and troubleshoot problems, improving the overall developer experience.
 
+## Environment Variable Management
+
+### Changes Made:
+1. **Documented Environment Variables**: Added detailed documentation about required environment variables
+2. **Simplified Database Connection**: Removed shadowDatabaseUrl configuration from Prisma schema
+3. **Secured Sensitive Information**: Ensured all sensitive credentials are stored in environment variables
+4. **Standardized Connection Strings**: Used consistent format for database connection strings
+
+### Justification:
+Proper environment variable management is crucial for both security and ease of deployment. The previous configuration lacked clear documentation about required variables and their purpose. By documenting the environment variables and standardizing connection strings, we've made it easier to set up the application in different environments while maintaining security best practices.
+
 ## Code Improvements
 
 ### Changes Made:
