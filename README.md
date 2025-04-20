@@ -1,8 +1,8 @@
 # QuizMe 🧠
 
-An interactive learning tool that automatically generates quiz questions from any text content using AI. Perfect for students, teachers, and lifelong learners.
+!An interactive learning tool that automatically generates quiz questions from any text content using AI. Perfect for students, teachers, and lifelong learners.
 
-## Features ✨
+## Features ✨ 
 
 - **Instant Question Generation**: Paste any text and get intelligent multiple-choice questions
 - **AI-Powered**: Utilizes GPT-4 to create relevant and challenging questions
