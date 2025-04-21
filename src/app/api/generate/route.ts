@@ -39,17 +39,15 @@ export async function POST(request: Request) {
         user = await prisma.user.create({
           data: {
             clerkId: userId,
-            email: 'user@example.com', // Default email, will be updated by webhook later
-            username: 'user', // Default username, will be updated by webhook later
+            email: `user_${userId.substring(0, 8)}@example.com`, // More unique default email
+            username: `user_${userId.substring(0, 8)}`, // More unique default username
           }
         });
         console.log('Created new user in database:', user.id);
       } catch (error) {
         console.error('Error creating user:', error);
-        return NextResponse.json(
-          { error: 'Failed to create user in database.' },
-          { status: 500 }
-        );
+        // Continue without a user record - we'll create the quiz without a user association
+        console.log('Continuing without user association');
       }
     } else {
       console.log('Found user in database:', user.id);
@@ -116,18 +114,33 @@ export async function POST(request: Request) {
     const parsedResponse = JSON.parse(response);
     const questions = parsedResponse.questions || [];
 
-    // Create a new quiz record with the name and associate it with the user
+    // Create a new quiz record with the name and associate it with the user if available
+    const quizData: {
+      name: string;
+      text: string;
+      questions: string;
+      totalQuestions: number;
+      correctAnswers: number;
+      skippedQuestions: number;
+      timeSpent: number;
+      userId?: string; // Make userId optional
+    } = {
+      name: quizName,
+      text,
+      questions: JSON.stringify(questions),
+      totalQuestions: questions.length,
+      correctAnswers: 0,
+      skippedQuestions: 0,
+      timeSpent: 0,
+    };
+    
+    // Only add userId if we have a valid user
+    if (user?.id) {
+      quizData.userId = user.id;
+    }
+    
     const quiz = await prisma.quiz.create({
-      data: {
-        name: quizName,
-        text,
-        questions: JSON.stringify(questions),
-        totalQuestions: questions.length,
-        correctAnswers: 0,
-        skippedQuestions: 0,
-        timeSpent: 0,
-        userId: user.id, // Use the database user ID, not the Clerk ID
-      },
+      data: quizData,
     });
 
     console.log('Quiz created, returning quiz data');

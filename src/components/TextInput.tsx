@@ -161,15 +161,17 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
     console.log('Clerk user:', clerkUser);
     
     if (!clerkUser) {
-      console.log('No user found, opening sign-in modal');
+      console.log('No Clerk user found, trying to open sign-in modal');
       try {
         openSignIn(); // Open the Clerk sign-in modal
       } catch (error) {
-        console.log('User is already signed in or there was an error opening sign-in modal');
+        console.log('Error opening sign-in modal:', error);
+        alert('Please sign in to create a quiz');
       }
       return;
     }
 
+    // User is already signed in, proceed with quiz creation
     setIsLoading(true);
     setWasTruncated(false);
 
