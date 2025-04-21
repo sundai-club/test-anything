@@ -59,7 +59,7 @@ function QuizHistory({ quizzes }: { quizzes: Quiz[] }) {
       <h1 className="text-3xl font-bold text-gray-900 mb-6">Your Quiz History</h1>
       {quizzes.length === 0 ? (
         <p className="text-lg text-gray-700 bg-white/80 backdrop-blur-sm rounded-lg p-4 text-center">
-          You haven't created any quizzes yet.
+          You haven&apos;t created any quizzes yet.
         </p>
       ) : (
         <ul className="space-y-6">
@@ -90,7 +90,6 @@ export default function UserPage() {
           setError('Failed to load quizzes');
           setLoading(false);
         });
-      console.log(quizzes);
     }
   }, [user]);
 
