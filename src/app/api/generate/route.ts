@@ -62,9 +62,11 @@ export async function POST(request: Request) {
     }
 
     // First, get a name for the quiz
-    const namePrompt = `Generate a short, catchy name (maximum 40 characters) for a quiz based on this text. Return only the name, nothing else:
-    
-    ${text.substring(0, 500)}...`;
+    const namePrompt = `Create a concise, engaging title (maximum 40 characters) for a quiz based on the following content.
+    The title should clearly reflect the main subject matter and be appealing to learners.
+    Return ONLY the title text, nothing else:
+
+    ${text.substring(0, 800)}...`;
 
     const nameCompletion = await openai.chat.completions.create({
       messages: [{ role: "user", content: namePrompt }],
@@ -76,24 +78,33 @@ export async function POST(request: Request) {
     const quizName = nameCompletion.choices[0].message.content?.trim() || 'Untitled Quiz';
 
     // Then generate questions as before
-    const questionsPrompt = `You are a helpful AI that generates multiple choice questions. 
-    Please generate 10 unique multiple-choice questions based on the following text.
-    Return the response in JSON format with an array of questions.
-    
+    const questionsPrompt = `You are an expert educator creating high-quality quiz questions to test understanding of important concepts.
+
+    Generate 10 multiple-choice questions based on the following text. Focus ONLY on the key concepts, important facts, and meaningful insights from the content.
+
+    IMPORTANT GUIDELINES:
+    1. DO NOT ask about superficial details like page numbers, document length, or formatting.
+    2. DO NOT create questions about the author, publication date, or other metadata unless it's central to understanding the content.
+    3. Focus on testing comprehension of the main ideas, critical thinking, and application of concepts.
+    4. Ensure questions are diverse in difficulty (easy, medium, hard) and cover different aspects of the content.
+    5. Make sure all questions are directly relevant to the source material.
+    6. Create plausible but clearly incorrect distractors for multiple-choice options.
+    7. Provide helpful hints that guide thinking without giving away the answer.
+
     Text to analyze:
     """
     ${text}
     """
-    
-    Please format your response as a JSON object with a "questions" array containing objects with the following structure:
+
+    Return your response as a JSON object with this exact structure:
     {
       "questions": [
         {
           "id": 1,
-          "question": "What is being asked?",
-          "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
-          "correctAnswer": "The correct option",
-          "hint": "A helpful hint about the answer 💡"
+          "question": "A clear, concise question about an important concept?",
+          "options": ["Plausible wrong answer", "Correct answer", "Plausible wrong answer", "Plausible wrong answer"],
+          "correctAnswer": "Correct answer",
+          "hint": "A helpful hint that guides thinking without giving away the answer 💡"
         }
       ]
     }`;
