@@ -24,12 +24,24 @@ export default function CommunityQuizzes() {
       try {
         const response = await fetch('/api/quizzes');
         const data = await response.json();
-        const sortedQuizzes = data
-          .sort((a: Quiz, b: Quiz) => b.timesCompleted - a.timesCompleted)
-          .slice(0, 10);
-        setQuizzes(sortedQuizzes);
+        
+        // Check if data is an array and has items
+        if (Array.isArray(data) && data.length > 0) {
+          const sortedQuizzes = data
+            .sort((a: Quiz, b: Quiz) => b.timesCompleted - a.timesCompleted)
+            .slice(0, 10);
+          setQuizzes(sortedQuizzes);
+        } else if (data.error) {
+          console.error('API returned an error:', data.error);
+          setQuizzes([]);
+        } else {
+          // If data is not an array or is empty, set empty array
+          console.log('No quizzes found or invalid data format');
+          setQuizzes([]);
+        }
       } catch (error) {
         console.error('Error fetching quizzes:', error);
+        setQuizzes([]);
       } finally {
         setIsLoading(false);
       }
@@ -54,11 +66,17 @@ export default function CommunityQuizzes() {
           (Try quizzes from others!)
         </span>
       </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {quizzes.map((quiz) => (
-          <QuizCard key={quiz.id} quiz={quiz} />
-        ))}
-      </div>
+      {quizzes.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {quizzes.map((quiz) => (
+            <QuizCard key={quiz.id} quiz={quiz} />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-4 text-gray-600">
+          No community quizzes available yet. Be the first to create one!
+        </div>
+      )}
     </div>
   );
 } 

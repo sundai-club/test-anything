@@ -1,4 +1,7 @@
 'use client';
+import FeedbackSection from './FeedbackSection';
+import { useState } from 'react';
+import type { Question } from '@/types';
 
 interface CompletionStats {
   totalQuestions: number;
@@ -10,12 +13,15 @@ interface CompletionStats {
 export default function CompletionScreen({ 
   stats, 
   onRestart,
-  quizId
+  quizId,
+  questions = []
 }: { 
   stats: CompletionStats;
   onRestart: () => void;
   quizId?: string;
+  questions?: Question[];
 }) {
+  const [showFeedback, setShowFeedback] = useState(false);
   const percentageCorrect = Math.round((stats.correctAnswers / stats.totalQuestions) * 100);
   const minutes = Math.floor(stats.timeSpent / 60);
   const seconds = stats.timeSpent % 60;
@@ -162,7 +168,14 @@ export default function CompletionScreen({
             Try Another Topic 🚀
           </button>
         </div>
+
+        {/* Feedback Section */}
+        {questions.length > 0 && (
+          <div className="mt-8 pt-8 border-t border-gray-200">
+            <FeedbackSection questions={questions} />
+          </div>
+        )}
       </div>
     </div>
   );
-} 
+}

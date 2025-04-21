@@ -127,9 +127,10 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
             stats={stats}
             onRestart={() => router.push('/')}
             quizId={resolvedParams.id}
+            questions={questions}
           />
         )}
       </main>
     </div>
   );
-} 
+}
