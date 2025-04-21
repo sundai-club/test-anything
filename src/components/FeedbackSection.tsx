@@ -63,7 +63,7 @@ export default function FeedbackSection({
           <ul className="space-y-4 mb-6">
             {questions.map((question, index) => (
               <li key={index} className="p-4 bg-white rounded-lg border border-gray-200">
-                <p className="text-gray-800 mb-2">{question.text || question.question}</p>
+                <p className="text-gray-800 mb-2">{question.question}</p>
                 <div className="flex space-x-3">
                   <button
                     onClick={() => handleFeedback(index, 'thumbs-up')}
