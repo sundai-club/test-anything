@@ -86,22 +86,14 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
   const [input, setInput] = useState('');
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
   const [wasTruncated, setWasTruncated] = useState(false);
-  const [loadingState, setLoadingState] = useState<LoadingState>({
-    isLoading: false,
-    wasTruncated: false
-  });
-
-  const [content, setContent] = useState('');
+  const router = useRouter();
   const { user } = useExtendedUser();
   const { openSignIn } = useClerk();
 
   useEffect(() => {
     setInput('');
     setPdfFile(null);
-    setError(null);
   }, [inputMode]);
 
   // Add useEffect to load PDF.js
@@ -126,7 +118,8 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
       setPdfFile(file);
       setInput(file.name); // Show filename in input
     } else {
-      setError('Please upload a PDF file');
+      setIsLoading(false);
+      setWasTruncated(false);
     }
   }, []);
 
@@ -140,10 +133,10 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
 
   const truncateText = (text: string) => {
     if (text.length > MAX_CHARS) {
-      setLoadingState(prev => ({ ...prev, wasTruncated: true }));
+      setWasTruncated(true);
       return text.slice(0, MAX_CHARS);
     }
-    setLoadingState(prev => ({ ...prev, wasTruncated: false }));
+    setWasTruncated(false);
     return text;
   };
 
@@ -168,8 +161,8 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
       return;
     }
 
-    setLoadingState(prev => ({ ...prev, isLoading: true }));
-    setError(null);
+    setIsLoading(true);
+    setWasTruncated(false);
 
     try {
       let textToProcess = input;
@@ -180,12 +173,8 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
         textToProcess = truncateText(textToProcess);
       } else if (inputMode === 'url') {
         if (input.toLowerCase().endsWith('.pdf')) {
-          setError(
-            'PDF URLs cannot be processed directly. Please:\n' +
-            '1. Download the PDF to your computer\n' +
-            '2. Switch to PDF mode using the toggle above\n' +
-            '3. Upload the downloaded PDF file'
-          );
+          setIsLoading(false);
+          setWasTruncated(false);
           return;
         }
 
@@ -205,11 +194,8 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
 
           if (!response.ok) {
             if (data.type === 'SCRAPING_BLOCKED') {
-              setError(
-                'This website does not allow content scraping. Please try one of these alternatives:\n' +
-                '1. Generate a PDF of the page and upload it\n' +
-                '2. Copy and paste the text content directly'
-              );
+              setIsLoading(false);
+              setWasTruncated(false);
               return;
             }
             throw new Error(data.error || 'Failed to fetch URL content');
@@ -217,7 +203,8 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
 
           textToProcess = data.content;
         } catch (error) {
-          setError(error instanceof Error ? error.message : 'Failed to fetch URL content');
+          setIsLoading(false);
+          setWasTruncated(false);
           return;
         }
       }
@@ -229,7 +216,7 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
         },
         body: JSON.stringify({ 
           text: textToProcess,
-          wasTextTruncated: loadingState.wasTruncated,
+          wasTextTruncated: wasTruncated,
           userId: user.id // Pass user ID to associate quiz
         }),
       });
@@ -246,24 +233,21 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
 
       router.push(`/quiz/${data.quizId}`);
     } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : 'An unexpected error occurred';
-      setError(errorMessage);
-      console.error('Error in handleSubmit:', e);
-    } finally {
-      setLoadingState(prev => ({ ...prev, isLoading: false }));
+      setIsLoading(false);
+      setWasTruncated(false);
     }
   };
 
   return (
     <div className="space-y-4 animate-fadeIn">
-      {loadingState.isLoading ? (
+      {isLoading ? (
         <>
-          {loadingState.wasTruncated && (
+          {wasTruncated && (
             <div className="text-amber-600 text-sm bg-amber-50 p-3 rounded-lg border border-amber-200">
               ⚠️ The input was too long and has been truncated to {MAX_CHARS.toLocaleString()} characters for optimal processing.
             </div>
           )}
-          <LoadingAnimation wasTruncated={loadingState.wasTruncated} />
+          <LoadingAnimation wasTruncated={wasTruncated} />
         </>
       ) : (
         <>
@@ -385,10 +369,6 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
               )}
             </div>
           </div>
-          
-          {error && (
-            <div className="text-red-500 text-sm">{error}</div>
-          )}
           
           <button
             className="w-full py-3 px-6 bg-blue-500 text-white rounded-lg font-semibold

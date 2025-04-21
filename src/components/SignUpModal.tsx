@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { SignUp } from '@clerk/nextjs';
 
 export default function SignUpModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void; }) {
