@@ -106,6 +106,10 @@ const runBuild = async () => {
     console.log('Generating Prisma client...');
     execSync('npx prisma generate', { stdio: 'inherit' });
     
+    // Run Prisma migrations (important for Clerk user storage)
+    console.log('Running Prisma migrations...');
+    execSync('npx prisma migrate deploy', { stdio: 'inherit' });
+    
     // Run Next.js build
     console.log('Building Next.js application...');
     execSync('next build', { stdio: 'inherit' });
