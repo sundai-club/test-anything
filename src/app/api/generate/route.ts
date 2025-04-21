@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { prisma } from '@/lib/prisma';
+import { auth } from '@clerk/nextjs/server';
 
 export const maxDuration = 60;
 
@@ -10,9 +11,52 @@ const openai = new OpenAI({
 
 export async function POST(request: Request) {
   try {
-    const { text, userId } = await request.json();
+    console.log('POST /api/generate - Request received');
+    const { text } = await request.json();
+    console.log('Request body parsed, text length:', text?.length);
+    
+    const { userId } = await auth();
+    console.log('Auth completed, userId:', userId);
+
+    if (!userId) {
+      console.log('No userId found, returning 401');
+      return NextResponse.json(
+        { error: 'Unauthorized. Please sign in to create a quiz.' },
+        { status: 401 }
+      );
+    }
+
+    // Find the user in the database by their Clerk ID
+    let user = await prisma.user.findUnique({
+      where: { clerkId: userId }
+    });
+
+    if (!user) {
+      console.log('User not found in database with clerkId:', userId);
+      
+      // Create a new user record for this Clerk user
+      try {
+        user = await prisma.user.create({
+          data: {
+            clerkId: userId,
+            email: 'user@example.com', // Default email, will be updated by webhook later
+            username: 'user', // Default username, will be updated by webhook later
+          }
+        });
+        console.log('Created new user in database:', user.id);
+      } catch (error) {
+        console.error('Error creating user:', error);
+        return NextResponse.json(
+          { error: 'Failed to create user in database.' },
+          { status: 500 }
+        );
+      }
+    } else {
+      console.log('Found user in database:', user.id);
+    }
 
     if (!text || text.trim().length === 0) {
+      console.log('Text is empty, returning 400');
       return NextResponse.json(
         { error: 'Input text is missing or empty' },
         { status: 400 }
@@ -65,6 +109,7 @@ export async function POST(request: Request) {
 
     const response = completion.choices[0].message.content;
     if (!response) {
+      console.log('No response from OpenAI');
       throw new Error('No response from OpenAI');
     }
 
@@ -81,10 +126,11 @@ export async function POST(request: Request) {
         correctAnswers: 0,
         skippedQuestions: 0,
         timeSpent: 0,
-        userId, // Associate quiz with user
+        userId: user.id, // Use the database user ID, not the Clerk ID
       },
     });
 
+    console.log('Quiz created, returning quiz data');
     return NextResponse.json({ 
       questions,
       quizId: quiz.id 

@@ -4,7 +4,7 @@ import LoadingAnimation from './LoadingAnimation';
 import { useDropzone } from 'react-dropzone';
 import { useRouter } from 'next/navigation';
 import { useExtendedUser } from '../providers/UserProvider';
-import { useClerk } from '@clerk/clerk-react';
+import { useClerk, useUser } from '@clerk/nextjs';
 
 interface TextInputProps {
   suggestedTopics: Record<string, string>;
@@ -90,6 +90,7 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
   const router = useRouter();
   const { user } = useExtendedUser();
   const { openSignIn } = useClerk();
+  const { user: clerkUser } = useUser();
 
   useEffect(() => {
     setInput('');
@@ -156,8 +157,16 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
   };
 
   const handleSubmit = async () => {
-    if (!user) {
-      openSignIn(); // Open the Clerk sign-in modal
+    console.log('handleSubmit called, user:', user);
+    console.log('Clerk user:', clerkUser);
+    
+    if (!clerkUser) {
+      console.log('No user found, opening sign-in modal');
+      try {
+        openSignIn(); // Open the Clerk sign-in modal
+      } catch (error) {
+        console.log('User is already signed in or there was an error opening sign-in modal');
+      }
       return;
     }
 
@@ -209,6 +218,7 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
         }
       }
 
+      console.log('Sending request to /api/generate with text:', textToProcess.substring(0, 100) + '...');
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: {
@@ -216,12 +226,12 @@ export default function TextInput({ suggestedTopics }: TextInputProps) {
         },
         body: JSON.stringify({ 
           text: textToProcess,
-          wasTextTruncated: wasTruncated,
-          userId: user.id // Pass user ID to associate quiz
+          wasTextTruncated: wasTruncated
         }),
       });
 
       const data = await response.json();
+      console.log('Response from /api/generate:', data);
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to generate questions');

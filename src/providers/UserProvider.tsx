@@ -25,12 +25,17 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log('UserProvider useEffect - clerkUser:', clerkUser);
+    
     const fetchUser = async () => {
       if (clerkUser) {
+        console.log('Fetching user data for clerkUser:', clerkUser.id);
         try {
           const response = await fetch('/api/user');
+          console.log('User API response status:', response.status);
           if (!response.ok) throw new Error('Failed to fetch user');
           const dbUser = await response.json();
+          console.log('Received dbUser:', dbUser);
           setUser(dbUser);
         } catch (err) {
           console.error('Error fetching user:', err);
@@ -39,6 +44,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setLoading(false);
         }
       } else {
+        console.log('No clerkUser, setting loading to false');
         setLoading(false);
       }
     };
