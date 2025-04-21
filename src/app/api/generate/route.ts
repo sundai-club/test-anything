@@ -28,7 +28,7 @@ export async function POST(request: Request) {
 
     const nameCompletion = await openai.chat.completions.create({
       messages: [{ role: "user", content: namePrompt }],
-      model: "gpt-4-turbo-preview",
+      model: "gpt-4o",
       temperature: 0.7,
       max_tokens: 60
     });

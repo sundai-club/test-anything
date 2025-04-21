@@ -1,7 +1,4 @@
 'use client';
-import React from "react";
-import { Question } from "@/types";
-import FeedbackSection from "./FeedbackSection";
 
 interface CompletionStats {
   totalQuestions: number;
@@ -12,12 +9,10 @@ interface CompletionStats {
 
 export default function CompletionScreen({ 
   stats, 
-  questions,
   onRestart,
   quizId
 }: { 
   stats: CompletionStats;
-  questions: Question[];
   onRestart: () => void;
   quizId?: string;
 }) {
@@ -168,11 +163,6 @@ export default function CompletionScreen({
           </button>
         </div>
       </div>
-
-      {/* Feedback Section */}
-      <FeedbackSection
-        questions={questions}
-      />
     </div>
   );
-}
+} 
